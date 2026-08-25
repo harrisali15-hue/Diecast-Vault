@@ -603,7 +603,38 @@ img{-webkit-user-drag:none;}
       </div>
       <div class="field-error hidden" id="siError"></div>
       <button type="submit" class="btn btn-primary btn-block" id="siSubmit">Sign In</button>
+      <div class="auth-switch"><a id="siForgot">Forgot password?</a></div>
       <div class="auth-switch">New here? <a id="siGoCreate">Create an account</a></div>
+    </form>
+
+    <form class="auth-form hidden" id="resetForm" autocomplete="on">
+      <div class="field-group">
+        <label class="field-label">Username</label>
+        <input class="field-input" id="rsUsername" autocomplete="username" required>
+      </div>
+      <div class="field-error hidden" id="rsError"></div>
+      <div class="auth-switch hidden" id="rsSent">If that account exists, a reset link has been sent to its email. Check your inbox.</div>
+      <button type="submit" class="btn btn-primary btn-block" id="rsSubmit">Send Reset Link</button>
+      <div class="auth-switch"><a id="rsGoSignIn">Back to sign in</a></div>
+    </form>
+
+    <form class="auth-form hidden" id="newPasswordForm" autocomplete="on">
+      <div class="field-group">
+        <label class="field-label">New Password</label>
+        <div class="pw-wrap">
+          <input class="field-input" id="npPassword" type="password" autocomplete="new-password" required>
+          <button type="button" class="pw-eye" data-target="npPassword"></button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Confirm New Password</label>
+        <div class="pw-wrap">
+          <input class="field-input" id="npConfirm" type="password" autocomplete="new-password" required>
+          <button type="button" class="pw-eye" data-target="npConfirm"></button>
+        </div>
+      </div>
+      <div class="field-error hidden" id="npError"></div>
+      <button type="submit" class="btn btn-primary btn-block" id="npSubmit">Set New Password</button>
     </form>
 
     <form class="auth-form hidden" id="createForm" autocomplete="on">
@@ -627,6 +658,10 @@ img{-webkit-user-drag:none;}
       <div class="field-group">
         <label class="field-label">Date of Birth</label>
         <input class="field-input" id="caDob" type="date" autocomplete="bday" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Email</label>
+        <input class="field-input" id="caEmail" type="email" autocomplete="email" required>
       </div>
       <div class="field-group">
         <label class="field-label">Username</label>
@@ -2232,14 +2267,10 @@ window.DVApp.start = initApp;
 
 var SUPABASE_URL = "https://gnlewntuiisuyeesbowa.supabase.co";
 var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGV3bnR1aWlzdXllZXNib3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MzczNDcsImV4cCI6MjEwMzIxMzM0N30.8OzNBj_Y4sxRx0YOCuq333wMzHbs_K_rWIWSfSvu9Q8";
-var EMAIL_DOMAIN = "@users.diecastvault.app";
 
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 var pendingAvatarFile = null;
 
-function usernameToEmail(username){
-  return String(username).trim().toLowerCase() + EMAIL_DOMAIN;
-}
 function eyeIcon(open){
   return open
     ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>'
@@ -2273,18 +2304,30 @@ var tabSignIn = document.getElementById("tabSignIn");
 var tabCreate = document.getElementById("tabCreate");
 var signInForm = document.getElementById("signInForm");
 var createForm = document.getElementById("createForm");
+var resetForm = document.getElementById("resetForm");
+var newPasswordForm = document.getElementById("newPasswordForm");
+var allAuthForms = [signInForm, createForm, resetForm, newPasswordForm];
+function showForm(form){
+  allAuthForms.forEach(function(f){ f.classList.toggle("hidden", f !== form); });
+}
 function showSignIn(){
   tabSignIn.classList.add("active"); tabCreate.classList.remove("active");
-  signInForm.classList.remove("hidden"); createForm.classList.add("hidden");
+  showForm(signInForm);
 }
 function showCreate(){
   tabCreate.classList.add("active"); tabSignIn.classList.remove("active");
-  createForm.classList.remove("hidden"); signInForm.classList.add("hidden");
+  showForm(createForm);
+}
+function showReset(){
+  tabSignIn.classList.remove("active"); tabCreate.classList.remove("active");
+  showForm(resetForm);
 }
 tabSignIn.addEventListener("click", showSignIn);
 tabCreate.addEventListener("click", showCreate);
 document.getElementById("siGoCreate").addEventListener("click", showCreate);
 document.getElementById("caGoSignIn").addEventListener("click", showSignIn);
+document.getElementById("siForgot").addEventListener("click", showReset);
+document.getElementById("rsGoSignIn").addEventListener("click", showSignIn);
 
 /* ---------- avatar picker ---------- */
 var avatarPreview = document.getElementById("avatarPreview");
@@ -2312,7 +2355,11 @@ signInForm.addEventListener("submit", function(e){
 
   var btn = document.getElementById("siSubmit");
   setBusy(btn, true, "Sign In");
-  sb.auth.signInWithPassword({ email: usernameToEmail(username), password: password })
+  sb.rpc("email_for_username", { p_username: username })
+    .then(function(res){
+      if(res.error || !res.data){ throw new Error("Incorrect username or password."); }
+      return sb.auth.signInWithPassword({ email: res.data, password: password });
+    })
     .then(function(res){
       if(res.error){
         throw new Error(/invalid/i.test(res.error.message) ? "Incorrect username or password." : res.error.message);
@@ -2323,6 +2370,59 @@ signInForm.addEventListener("submit", function(e){
     .finally(function(){ setBusy(btn, false, "Sign In"); });
 });
 
+/* ---------- forgot password ---------- */
+resetForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  clearAuthError("rsError");
+  document.getElementById("rsSent").classList.add("hidden");
+  var username = document.getElementById("rsUsername").value.trim();
+  if(!username){ showAuthError("rsError","Enter your username."); return; }
+
+  var btn = document.getElementById("rsSubmit");
+  setBusy(btn, true, "Send Reset Link");
+  sb.rpc("email_for_username", { p_username: username })
+    .then(function(res){
+      var email = res.data;
+      if(res.error || !email){
+        // Don't reveal whether the username exists — show the same confirmation either way.
+        return;
+      }
+      return sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+    })
+    .then(function(){ document.getElementById("rsSent").classList.remove("hidden"); })
+    .catch(function(){ document.getElementById("rsSent").classList.remove("hidden"); })
+    .finally(function(){ setBusy(btn, false, "Send Reset Link"); });
+});
+
+/* ---------- set new password (arriving from a reset-link redirect) ---------- */
+newPasswordForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  clearAuthError("npError");
+  var pw = document.getElementById("npPassword").value;
+  var confirm = document.getElementById("npConfirm").value;
+  if(pw.length < 8){ showAuthError("npError","Password must be at least 8 characters."); return; }
+  if(pw !== confirm){ showAuthError("npError","Passwords do not match."); return; }
+
+  var btn = document.getElementById("npSubmit");
+  setBusy(btn, true, "Set New Password");
+  sb.auth.updateUser({ password: pw })
+    .then(function(res){
+      if(res.error) throw new Error(res.error.message);
+      return sb.auth.getSession();
+    })
+    .then(function(res){ return afterAuthed(res.data.session.user.id); })
+    .catch(function(err){ showAuthError("npError", err.message || "Could not set new password."); })
+    .finally(function(){ setBusy(btn, false, "Set New Password"); });
+});
+
+sb.auth.onAuthStateChange(function(event){
+  if(event === "PASSWORD_RECOVERY"){
+    document.getElementById("authLoading").classList.add("hidden");
+    document.getElementById("authView").classList.remove("hidden");
+    showForm(newPasswordForm);
+  }
+});
+
 /* ---------- create account ---------- */
 createForm.addEventListener("submit", function(e){
   e.preventDefault();
@@ -2331,11 +2431,13 @@ createForm.addEventListener("submit", function(e){
   var first = document.getElementById("caFirst").value.trim();
   var last = document.getElementById("caLast").value.trim();
   var dob = document.getElementById("caDob").value;
+  var email = document.getElementById("caEmail").value.trim();
   var username = document.getElementById("caUsername").value.trim();
   var password = document.getElementById("caPassword").value;
   var confirm = document.getElementById("caConfirm").value;
 
-  if(!first || !last || !dob || !username || !password){ showAuthError("caError","Please fill in every field."); return; }
+  if(!first || !last || !dob || !email || !username || !password){ showAuthError("caError","Please fill in every field."); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showAuthError("caError","Enter a valid email address."); return; }
   if(!/^[a-zA-Z0-9_]{3,20}$/.test(username)){ showAuthError("caError","Username must be 3-20 characters: letters, numbers, underscore."); return; }
   if(password.length < 8){ showAuthError("caError","Password must be at least 8 characters."); return; }
   if(password !== confirm){ showAuthError("caError","Passwords do not match."); return; }
@@ -2348,14 +2450,14 @@ createForm.addEventListener("submit", function(e){
       if(res.error) throw new Error("Couldn't verify username right now. Try again.");
       if(res.data === false) throw new Error("That username is already taken.");
       return sb.auth.signUp({
-        email: usernameToEmail(username),
+        email: email,
         password: password,
         options: { data: { username: username, first_name: first, last_name: last, date_of_birth: dob } }
       });
     })
     .then(function(res){
       if(res.error){
-        var m = /already registered|duplicate/i.test(res.error.message) ? "That username is already taken." : res.error.message;
+        var m = /already registered|duplicate/i.test(res.error.message) ? "An account with that email already exists." : res.error.message;
         throw new Error(m);
       }
       if(!res.data.session){
@@ -2431,4 +2533,4 @@ sb.auth.getSession().then(function(res){
 })();
 </script>
 </body>
-</html>
+  </html>
