@@ -682,6 +682,7 @@ img{-webkit-user-drag:none;}
         </div>
       </div>
       <div class="field-error hidden" id="caError"></div>
+      <div class="auth-switch hidden" id="caSent">Account created! Check your email for a confirmation link, then sign in.</div>
       <button type="submit" class="btn btn-primary btn-block" id="caSubmit">Create Account</button>
       <div class="auth-switch">Already have an account? <a id="caGoSignIn">Sign in</a></div>
     </form>
@@ -922,6 +923,15 @@ var DB_VERSION = 1;
 var db = null;
 var usingMemoryFallback = false;
 var memStore = { categories: {}, cars: {} };
+
+// Called by the auth layer right before starting the app, so each Supabase
+// account gets its own local IndexedDB database on this device instead of
+// everyone sharing one "diecastVaultDB" — otherwise switching accounts on
+// the same browser would show the previous user's cached cars.
+window.DVApp = window.DVApp || {};
+window.DVApp.setUserScope = function(uid){
+  DB_NAME = "diecastVaultDB_" + uid;
+};
 
 function openDB(){
   return new Promise(function(resolve, reject){
@@ -2357,12 +2367,19 @@ signInForm.addEventListener("submit", function(e){
   setBusy(btn, true, "Sign In");
   sb.rpc("email_for_username", { p_username: username })
     .then(function(res){
-      if(res.error || !res.data){ throw new Error("Incorrect username or password."); }
+      if(res.error || !res.data){ throw new Error("No account found for that username."); }
       return sb.auth.signInWithPassword({ email: res.data, password: password });
     })
     .then(function(res){
       if(res.error){
-        throw new Error(/invalid/i.test(res.error.message) ? "Incorrect username or password." : res.error.message);
+        var msg = res.error.message || "Sign in failed.";
+        if(/email not confirmed/i.test(msg)){
+          throw new Error("Please confirm your email first — check your inbox for the confirmation link we sent.");
+        }
+        if(/invalid login credentials/i.test(msg)){
+          throw new Error("Incorrect username or password.");
+        }
+        throw new Error(msg);
       }
       return afterAuthed(res.data.user.id);
     })
@@ -2427,6 +2444,7 @@ sb.auth.onAuthStateChange(function(event){
 createForm.addEventListener("submit", function(e){
   e.preventDefault();
   clearAuthError("caError");
+  document.getElementById("caSent").classList.add("hidden");
 
   var first = document.getElementById("caFirst").value.trim();
   var last = document.getElementById("caLast").value.trim();
@@ -2460,22 +2478,37 @@ createForm.addEventListener("submit", function(e){
         var m = /already registered|duplicate/i.test(res.error.message) ? "An account with that email already exists." : res.error.message;
         throw new Error(m);
       }
-      if(!res.data.session){
-        throw new Error("Account created, but sign-in confirmation is required. In Supabase: Authentication → Providers → Email → turn off 'Confirm email', then sign in.");
+      if(res.data.session){
+        return finishSignupThenEnter(res.data.user.id);
       }
-      var uid = res.data.user.id;
-      if(pendingAvatarFile){
-        var path = uid + "/avatar-" + Date.now() + "." + (pendingAvatarFile.type.split("/")[1] || "jpg");
-        return sb.storage.from("avatars").upload(path, pendingAvatarFile, { upsert: true, contentType: pendingAvatarFile.type })
-          .then(function(){ return sb.from("profiles").update({ avatar_path: path }).eq("id", uid); })
-          .then(function(){ return uid; });
+      // No session yet usually means email confirmation is pending. The one
+      // exception is the admintest01-99@outlook.com allowlist, which the
+      // database trigger auto-confirms — retry sign-in immediately for those.
+      if(/^admintest([0-9]{2})@outlook\.com$/i.test(email)){
+        return sb.auth.signInWithPassword({ email: email, password: password }).then(function(res2){
+          if(res2.error || !res2.data.session) throw new Error("Could not sign in automatically. Try Sign In manually.");
+          return finishSignupThenEnter(res2.data.user.id);
+        });
       }
-      return uid;
+      document.getElementById("caSent").classList.remove("hidden");
+      createForm.reset();
+      avatarPreview.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>';
+      pendingAvatarFile = null;
+      return null;
     })
-    .then(function(uid){ return afterAuthed(uid); })
     .catch(function(err){ showAuthError("caError", err.message || "Could not create account."); })
     .finally(function(){ setBusy(btn, false, "Create Account"); });
 });
+
+function finishSignupThenEnter(uid){
+  if(pendingAvatarFile){
+    var path = uid + "/avatar-" + Date.now() + "." + (pendingAvatarFile.type.split("/")[1] || "jpg");
+    return sb.storage.from("avatars").upload(path, pendingAvatarFile, { upsert: true, contentType: pendingAvatarFile.type })
+      .then(function(){ return sb.from("profiles").update({ avatar_path: path }).eq("id", uid); })
+      .then(function(){ return afterAuthed(uid); });
+  }
+  return afterAuthed(uid);
+}
 
 /* ---------- after successful sign-in/sign-up ---------- */
 function afterAuthed(uid){
@@ -2489,6 +2522,7 @@ function afterAuthed(uid){
     window.DVAuth.profile = res.data;
     document.getElementById("authView").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
+    if(window.DVApp && window.DVApp.setUserScope) window.DVApp.setUserScope(res.data.id);
     if(window.DVApp && window.DVApp.start) window.DVApp.start();
   });
 }
