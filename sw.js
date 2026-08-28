@@ -1,6 +1,6 @@
 // Minimal app-shell cache. Falls back to network for anything not cached,
 // and never blocks navigation if caching fails.
-var CACHE_NAME = "diecast-vault-v1";
+var CACHE_NAME = "diecast-vault-v2";
 var APP_SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", function(event){
