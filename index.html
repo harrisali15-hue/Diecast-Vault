@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -911,98 +910,186 @@ function compressImage(file, maxDim, quality){
 }
 
 /* ============================================================
-   STORAGE LAYER
-   IndexedDB is the primary store. If it's unavailable or blocked
-   (private browsing, restricted preview iframes, some file:// or
-   third-party contexts), the app automatically falls back to an
-   in-memory store so every button/screen keeps working for the
-   session, instead of silently breaking.
+   STORAGE LAYER — SUPABASE
+   Cars, categories, and photos live in Supabase (Postgres + Storage)
+   so they sync across every device on the same account, enforced by
+   Row Level Security. The public functions below (getAllCars,
+   putCar, etc.) keep the exact same names/shapes the rest of the
+   app already uses, so nothing above this layer needed to change.
    ============================================================ */
-var DB_NAME = "diecastVaultDB";
-var DB_VERSION = 1;
-var db = null;
-var usingMemoryFallback = false;
-var memStore = { categories: {}, cars: {} };
+var usingSupabase = true;
 
-// Called by the auth layer right before starting the app, so each Supabase
-// account gets its own local IndexedDB database on this device instead of
-// everyone sharing one "diecastVaultDB" — otherwise switching accounts on
-// the same browser would show the previous user's cached cars.
-window.DVApp = window.DVApp || {};
-window.DVApp.setUserScope = function(uid){
-  DB_NAME = "diecastVaultDB_" + uid;
-};
+function sbc(){ return window.DVAuth.client; }
+function myUid(){ return window.DVAuth.profile.id; }
 
-function openDB(){
-  return new Promise(function(resolve, reject){
-    if(!window.indexedDB){ reject(new Error("IndexedDB not available")); return; }
-    var req;
-    try{
-      req = indexedDB.open(DB_NAME, DB_VERSION);
-    }catch(e){ reject(e); return; }
-    req.onupgradeneeded = function(e){
-      var d = e.target.result;
-      if(!d.objectStoreNames.contains("categories")){
-        d.createObjectStore("categories", {keyPath:"id"});
-      }
-      if(!d.objectStoreNames.contains("cars")){
-        var s = d.createObjectStore("cars", {keyPath:"id"});
-        s.createIndex("order", "order", {unique:false});
-      }
+function carPhotoPath(carId, slot){
+  return myUid() + "/" + carId + "/" + slot + ".jpg";
+}
+function dataUrlToBlob(dataUrl){
+  return fetch(dataUrl).then(function(r){ return r.blob(); });
+}
+// value: null/undefined (no photo), a "data:" URL (new/changed photo to
+// upload), or an existing string (already-uploaded photo, unchanged).
+// Resolves to true if a photo should be recorded as present for this slot.
+function uploadCarPhotoIfNeeded(carId, slot, value){
+  var path = carPhotoPath(carId, slot);
+  if(value && typeof value === "string" && value.indexOf("data:") === 0){
+    return dataUrlToBlob(value).then(function(blob){
+      return sbc().storage.from("car-photos").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+    }).then(function(res){
+      if(res.error) throw res.error;
+      return true;
+    });
+  }
+  if(value) return Promise.resolve(true);
+  return Promise.resolve(false);
+}
+function signedUrlsForPaths(paths){
+  if(!paths.length) return Promise.resolve({});
+  return sbc().storage.from("car-photos").createSignedUrls(paths, 60*60*24).then(function(res){
+    var map = {};
+    (res.data||[]).forEach(function(item){ if(item && item.signedUrl && item.path) map[item.path] = item.signedUrl; });
+    return map;
+  }).catch(function(){ return {}; });
+}
+
+function sbGetAllCategories(){
+  return sbc().from("categories").select("*").eq("owner_id", myUid()).order("created_at", { ascending: true })
+    .then(function(res){
+      if(res.error) throw res.error;
+      return (res.data||[]).map(function(r, i){
+        return { id: r.id, name: r.name, color: r.color, builtin: r.is_builtin, order: i };
+      });
+    });
+}
+
+function sbPutCategory(cat){
+  var row = { id: cat.id || uid(), owner_id: myUid(), name: cat.name, color: cat.color || "#ff3b30", is_builtin: !!cat.builtin };
+  return sbc().from("categories").upsert(row, { onConflict: "id" }).then(function(res){
+    if(res.error){
+      if(res.error.code === "23505") throw new Error("A category with that name already exists.");
+      throw res.error;
+    }
+    return row.id;
+  });
+}
+
+function sbDeleteCategory(id){
+  return sbc().from("categories").delete().eq("id", id).then(function(res){ if(res.error) throw res.error; });
+}
+
+function sbGetAllCars(){
+  return sbc().from("cars").select("*, car_categories(category_id)").order("created_at", { ascending: false })
+    .then(function(res){
+      if(res.error) throw res.error;
+      var rows = res.data || [];
+      var pathMeta = [];
+      rows.forEach(function(r){
+        PHOTO_SLOTS.forEach(function(slot){
+          if(r.photos && r.photos[slot]){
+            pathMeta.push({ carId: r.id, slot: slot, path: r.owner_id + "/" + r.id + "/" + slot + ".jpg" });
+          }
+        });
+      });
+      return signedUrlsForPaths(pathMeta.map(function(m){ return m.path; })).then(function(urlMap){
+        return rows.map(function(r){
+          var photos = {};
+          pathMeta.filter(function(m){ return m.carId === r.id; }).forEach(function(m){
+            photos[m.slot] = urlMap[m.path] || null;
+          });
+          return {
+            id: r.id, name: r.name, brand: r.brand, year: r.year,
+            extColor: r.ext_color, intColor: r.int_color, madeIn: r.made_in,
+            packagingType: r.packaging_type, packSize: r.pack_size,
+            favourite: r.favorite, visibility: r.visibility,
+            categoryIds: (r.car_categories||[]).map(function(cc){ return cc.category_id; }),
+            photos: photos,
+            createdAt: new Date(r.created_at).getTime(),
+            order: new Date(r.created_at).getTime(),
+            ownerId: r.owner_id
+          };
+        });
+      });
+    });
+}
+
+function sbPutCar(car){
+  var carId = car.id || uid();
+  var draft = car.photos || {};
+  return Promise.all(PHOTO_SLOTS.map(function(slot){
+    return uploadCarPhotoIfNeeded(carId, slot, draft[slot]).then(function(present){ return { slot: slot, present: present }; });
+  })).then(function(results){
+    var photosFlags = {};
+    results.forEach(function(r){ if(r.present) photosFlags[r.slot] = true; });
+    var row = {
+      id: carId, owner_id: myUid(),
+      name: car.name, brand: car.brand || null, year: car.year || null,
+      ext_color: car.extColor || null, int_color: car.intColor || null, made_in: car.madeIn || null,
+      packaging_type: car.packagingType || null, pack_size: car.packSize || null,
+      favorite: !!car.favourite,
+      visibility: car.visibility === "friends" ? "friends" : "private",
+      photos: photosFlags
     };
-    req.onsuccess = function(e){ db = e.target.result; resolve(db); };
-    req.onerror = function(e){ reject(e.target.error || new Error("IndexedDB open failed")); };
-    req.onblocked = function(){ reject(new Error("IndexedDB blocked")); };
-  });
-}
-function tx(store, mode){ return db.transaction(store, mode||"readonly").objectStore(store); }
-function reqToPromise(req){
-  return new Promise(function(res, rej){
-    req.onsuccess = function(){ res(req.result); };
-    req.onerror = function(){ rej(req.error); };
-  });
+    return sbc().from("cars").upsert(row, { onConflict: "id" });
+  }).then(function(res){
+    if(res.error) throw res.error;
+    return sbc().from("car_categories").delete().eq("car_id", carId);
+  }).then(function(){
+    var cats = (car.categoryIds||[]).map(function(cid){ return { car_id: carId, category_id: cid }; });
+    if(!cats.length) return Promise.resolve();
+    return sbc().from("car_categories").insert(cats).then(function(res){ if(res.error) throw res.error; });
+  }).then(function(){ return carId; });
 }
 
-/* ---- real IndexedDB-backed implementations ---- */
-function idbGetAllCategories(){ return reqToPromise(tx("categories").getAll()); }
-function idbGetAllCars(){ return reqToPromise(tx("cars").getAll()); }
-function idbPutCategory(cat){ return reqToPromise(tx("categories","readwrite").put(cat)); }
-function idbDeleteCategory(id){ return reqToPromise(tx("categories","readwrite").delete(id)); }
-function idbPutCar(car){ return reqToPromise(tx("cars","readwrite").put(car)); }
-function idbDeleteCar(id){ return reqToPromise(tx("cars","readwrite").delete(id)); }
-function idbClearStore(name){ return reqToPromise(tx(name,"readwrite").clear()); }
+// Deliberately does NOT remove the car's photo files from storage — the
+// app offers a 5-second "undo" after delete that re-inserts the same car
+// row, and eagerly deleting the images would leave that restored car
+// pointing at now-missing photos. Orphaned photo files from genuinely
+// deleted cars are a minor, private (RLS-protected) storage cost rather
+// than a correctness bug — Reset Collection below does clean them up
+// since that action has no undo.
+function sbDeleteCar(carId){
+  return sbc().from("cars").delete().eq("id", carId).then(function(res){ if(res.error) throw res.error; });
+}
 
-/* ---- in-memory fallback implementations (same shape, always resolve) ---- */
-function memGetAllCategories(){ return Promise.resolve(Object.keys(memStore.categories).map(function(k){return memStore.categories[k];})); }
-function memGetAllCars(){ return Promise.resolve(Object.keys(memStore.cars).map(function(k){return memStore.cars[k];})); }
-function memPutCategory(cat){ memStore.categories[cat.id] = cat; return Promise.resolve(cat.id); }
-function memDeleteCategory(id){ delete memStore.categories[id]; return Promise.resolve(); }
-function memPutCar(car){ memStore.cars[car.id] = car; return Promise.resolve(car.id); }
-function memDeleteCar(id){ delete memStore.cars[id]; return Promise.resolve(); }
-function memClearStore(name){ memStore[name] = {}; return Promise.resolve(); }
+function sbClearStore(name){
+  if(name === "categories"){
+    return sbc().from("categories").delete().eq("owner_id", myUid()).then(function(res){ if(res.error) throw res.error; });
+  }
+  if(name === "cars"){
+    return sbc().from("cars").select("id").eq("owner_id", myUid()).then(function(res){
+      if(res.error) throw res.error;
+      var paths = [];
+      (res.data||[]).forEach(function(r){ PHOTO_SLOTS.forEach(function(slot){ paths.push(carPhotoPath(r.id, slot)); }); });
+      var removePhotos = paths.length ? sbc().storage.from("car-photos").remove(paths).catch(function(){}) : Promise.resolve();
+      return removePhotos.then(function(){ return sbc().from("cars").delete().eq("owner_id", myUid()); });
+    }).then(function(res){ if(res && res.error) throw res.error; });
+  }
+  return Promise.resolve();
+}
 
-/* ---- public storage API used by the rest of the app ---- */
-function getAllCategories(){ return usingMemoryFallback ? memGetAllCategories() : idbGetAllCategories(); }
-function getAllCars(){ return usingMemoryFallback ? memGetAllCars() : idbGetAllCars(); }
-function putCategory(cat){ return (usingMemoryFallback ? memPutCategory(cat) : idbPutCategory(cat)).catch(handleStorageError); }
-function deleteCategoryDB(id){ return (usingMemoryFallback ? memDeleteCategory(id) : idbDeleteCategory(id)).catch(handleStorageError); }
-function putCar(car){ return (usingMemoryFallback ? memPutCar(car) : idbPutCar(car)).catch(handleStorageError); }
-function deleteCarDB(id){ return (usingMemoryFallback ? memDeleteCar(id) : idbDeleteCar(id)).catch(handleStorageError); }
-function clearStore(name){ return (usingMemoryFallback ? memClearStore(name) : idbClearStore(name)).catch(handleStorageError); }
+/* ---- public storage API used by the rest of the app (unchanged names) ---- */
+function getAllCategories(){ return sbGetAllCategories(); }
+function getAllCars(){ return sbGetAllCars(); }
+function putCategory(cat){ return sbPutCategory(cat).catch(handleStorageError); }
+function deleteCategoryDB(id){ return sbDeleteCategory(id).catch(handleStorageError); }
+function putCar(car){ return sbPutCar(car).catch(handleStorageError); }
+function deleteCarDB(id){ return sbDeleteCar(id).catch(handleStorageError); }
+function clearStore(name){ return sbClearStore(name).catch(handleStorageError); }
 
 function handleStorageError(err){
   console.error("Storage error", err);
-  showToast("Something went wrong saving that. Please try again.");
+  showToast((err && err.message) ? err.message : "Something went wrong saving that. Please try again.");
   throw err;
 }
 
 function ensureBuiltins(){
   return getAllCategories().then(function(cats){
-    var haveHW = cats.some(function(c){ return c.builtin && c.name === "Hot Wheels"; });
-    var haveMB = cats.some(function(c){ return c.builtin && c.name === "Matchbox"; });
+    var haveHW = cats.some(function(c){ return c.name === "Hot Wheels"; });
+    var haveMB = cats.some(function(c){ return c.name === "Matchbox"; });
     var jobs = [];
-    if(!haveHW) jobs.push(putCategory({id:uid(), name:"Hot Wheels", color:"#3b82f6", builtin:true, order:0}));
-    if(!haveMB) jobs.push(putCategory({id:uid(), name:"Matchbox", color:"#f97316", builtin:true, order:1}));
+    if(!haveHW) jobs.push(putCategory({id:uid(), name:"Hot Wheels", color:"#3b82f6", builtin:true}));
+    if(!haveMB) jobs.push(putCategory({id:uid(), name:"Matchbox", color:"#f97316", builtin:true}));
     return Promise.all(jobs);
   });
 }
@@ -2240,26 +2327,14 @@ window.addEventListener("unhandledrejection", function(e){
    INIT
    ============================================================ */
 function initApp(){
-  return openDB()
-    .catch(function(err){
-      console.warn("IndexedDB unavailable, using in-memory storage for this session:", err);
-      usingMemoryFallback = true;
-    })
-    .then(ensureBuiltins)
+  return ensureBuiltins()
     .then(loadAll)
     .then(function(){
       renderCollection();
-      if(usingMemoryFallback){
-        showToast("Local storage isn't available here — changes won't be saved after you close this page.");
-      }
     })
     .catch(function(err){
-      // Only reached if even the in-memory fallback failed (should not normally happen)
       console.error("App init failed", err);
-      document.getElementById("collection").innerHTML = "";
-      document.getElementById("emptyState").classList.remove("hidden");
-      document.querySelector("#emptyState h2").textContent = "Something went wrong";
-      document.querySelector("#emptyState p").textContent = "Please reload the page to try again.";
+      showToast("Could not load your vault. Check your connection and try reloading.");
     });
 }
 window.DVApp = window.DVApp || {};
@@ -2510,7 +2585,6 @@ function afterAuthed(uid){
     window.DVAuth.profile = res.data;
     document.getElementById("authView").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
-    if(window.DVApp && window.DVApp.setUserScope) window.DVApp.setUserScope(res.data.id);
     if(window.DVApp && window.DVApp.start) window.DVApp.start();
   });
 }
