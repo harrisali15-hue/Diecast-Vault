@@ -2270,9 +2270,15 @@ document.getElementById("importInput").addEventListener("change", function(e){
 function importCollection(data){
   Promise.all([clearStore("categories"), clearStore("cars")])
     .then(function(){
+      // Categories must be fully written first — cars link to them via a
+      // foreign key, so importing both in parallel can fail if a car's
+      // category row hasn't been created yet.
       var catJobs = data.categories.map(function(c){ return putCategory(c); });
+      return Promise.all(catJobs);
+    })
+    .then(function(){
       var carJobs = data.cars.map(function(c){ return putCar(c); });
-      return Promise.all(catJobs.concat(carJobs));
+      return Promise.all(carJobs);
     })
     .then(ensureBuiltins)
     .then(loadAll)
@@ -2281,7 +2287,10 @@ function importCollection(data){
       renderCollection(); renderSidebar(); renderSettings();
       showToast("Collection imported");
     })
-    .catch(function(){ showToast("Import failed"); });
+    .catch(function(err){
+      console.error("Import failed", err);
+      showToast("Import failed: " + (err && err.message ? err.message : "please try again."));
+    });
 }
 
 function resetCollection(){
