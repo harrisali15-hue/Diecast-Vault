@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -682,7 +683,6 @@ img{-webkit-user-drag:none;}
         </div>
       </div>
       <div class="field-error hidden" id="caError"></div>
-      <div class="auth-switch hidden" id="caSent">Account created! Check your email for a confirmation link, then sign in.</div>
       <button type="submit" class="btn btn-primary btn-block" id="caSubmit">Create Account</button>
       <div class="auth-switch">Already have an account? <a id="caGoSignIn">Sign in</a></div>
     </form>
@@ -2444,7 +2444,6 @@ sb.auth.onAuthStateChange(function(event){
 createForm.addEventListener("submit", function(e){
   e.preventDefault();
   clearAuthError("caError");
-  document.getElementById("caSent").classList.add("hidden");
 
   var first = document.getElementById("caFirst").value.trim();
   var last = document.getElementById("caLast").value.trim();
@@ -2481,20 +2480,9 @@ createForm.addEventListener("submit", function(e){
       if(res.data.session){
         return finishSignupThenEnter(res.data.user.id);
       }
-      // No session yet usually means email confirmation is pending. The one
-      // exception is the admintest01-99@outlook.com allowlist, which the
-      // database trigger auto-confirms — retry sign-in immediately for those.
-      if(/^admintest([0-9]{2})@outlook\.com$/i.test(email)){
-        return sb.auth.signInWithPassword({ email: email, password: password }).then(function(res2){
-          if(res2.error || !res2.data.session) throw new Error("Could not sign in automatically. Try Sign In manually.");
-          return finishSignupThenEnter(res2.data.user.id);
-        });
-      }
-      document.getElementById("caSent").classList.remove("hidden");
-      createForm.reset();
-      avatarPreview.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>';
-      pendingAvatarFile = null;
-      return null;
+      // Shouldn't happen with "Confirm email" turned off in Supabase, but
+      // guard against it rather than silently failing.
+      throw new Error("Account created, but no session was returned. In Supabase, check Authentication → Providers → Email → 'Confirm email' is turned OFF.");
     })
     .catch(function(err){ showAuthError("caError", err.message || "Could not create account."); })
     .finally(function(){ setBusy(btn, false, "Create Account"); });
@@ -2567,4 +2555,4 @@ sb.auth.getSession().then(function(res){
 })();
 </script>
 </body>
-  </html>
+</html>
