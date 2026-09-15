@@ -11,17 +11,20 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{
-  --bg:#0a0a0b;
-  --bg-elev:#131315;
-  --surface:#1a1a1c;
-  --surface-2:#212124;
-  --border:#2b2b2e;
-  --red:#ff3b30;
-  --red-dim:#c92a20;
-  --red-soft:rgba(255,59,48,.14);
-  --text:#f6f6f8;
-  --text-dim:#a3a3a8;
-  --text-faint:#6d6d72;
+  --bg:#12204f;
+  --bg-elev:#182a63;
+  --surface:#1d3374;
+  --surface-2:#24408f;
+  --border:#2f4a9c;
+  --red:#FFF0C9;
+  --red-dim:#e6d9ae;
+  --red-soft:rgba(255,240,201,.16);
+  --on-red:#12204f;
+  --danger:#ff3b30;
+  --danger-soft:rgba(255,59,48,.14);
+  --text:#fff6e0;
+  --text-dim:#c9d3f0;
+  --text-faint:#8b9ad1;
   --safe-t:max(14px, env(safe-area-inset-top));
   --safe-b:max(16px, env(safe-area-inset-bottom));
   --safe-l:max(14px, env(safe-area-inset-left));
@@ -29,6 +32,22 @@
   --r-lg:20px;
   --r-md:14px;
   --r-sm:10px;
+}
+/* Cream Soda theme — every role above swapped: cream becomes the
+   dominant surface/background color, blueberry becomes the accent. */
+:root[data-theme="cream"]{
+  --bg:#FFF0C9;
+  --bg-elev:#fce9b8;
+  --surface:#f7e1a6;
+  --surface-2:#f0d890;
+  --border:#dfc878;
+  --red:#243B8F;
+  --red-dim:#1a2c6b;
+  --red-soft:rgba(36,59,143,.14);
+  --on-red:#FFF6E0;
+  --text:#1a2550;
+  --text-dim:#3d4a80;
+  --text-faint:#6b78a8;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{height:100%;}
@@ -52,7 +71,9 @@ img{-webkit-user-drag:none;}
   display:flex; flex-direction:column;
   background:var(--bg);
 }
-#topbar{
+.app-screen{ display:none; flex-direction:column; flex:1; min-height:0; }
+.app-screen.active{ display:flex; }
+.topbar{
   display:flex; align-items:center; gap:8px;
   padding:var(--safe-t) var(--safe-r) 8px var(--safe-l);
   flex-shrink:0;
@@ -66,16 +87,16 @@ img{-webkit-user-drag:none;}
 }
 .icon-btn:active{background:var(--surface-2);}
 .icon-btn svg{width:17px; height:17px;}
-#topbarTitle{
+.topbar-title{
   flex:1; text-align:center;
   display:flex; flex-direction:column; align-items:center; gap:1px;
   min-width:0;
 }
-#topbarTitle .name{
+.topbar-title .name{
   font-size:13px; font-weight:600; letter-spacing:.2px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
 }
-#topbarTitle .count{
+.topbar-title .count{
   font-size:10.5px; color:var(--text-faint); font-weight:600; letter-spacing:.6px;
 }
 .fab-add{
@@ -88,11 +109,114 @@ img{-webkit-user-drag:none;}
   color:#fff;
   display:flex; align-items:center; justify-content:center;
   font-size:26px; font-weight:400; line-height:1;
-  box-shadow:0 6px 18px rgba(255,59,48,.4), 0 2px 6px rgba(0,0,0,.35);
+  box-shadow:0 6px 18px var(--red-soft), 0 2px 6px rgba(0,0,0,.35);
   z-index:20;
   border:1px solid rgba(255,255,255,.15);
 }
 .fab-add:active{ transform:scale(.94); }
+.fab-add{ bottom:calc(var(--safe-b) + 66px) !important; }
+
+#bottomNav{
+  display:flex; flex-shrink:0;
+  background:var(--surface); border-top:1px solid var(--border);
+  padding:7px var(--safe-r) calc(var(--safe-b) + 4px) var(--safe-l);
+}
+.nav-item{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+  color:var(--text-faint); font-size:10px; font-weight:700; letter-spacing:.2px; position:relative;
+}
+.nav-item svg{ width:22px; height:22px; }
+.nav-item.active{ color:var(--red); }
+.nav-badge{
+  position:absolute; top:-1px; right:26%; width:8px; height:8px; border-radius:50%;
+  background:var(--danger); border:1.5px solid var(--surface);
+}
+
+.friends-search-row{ display:flex; gap:8px; padding:12px var(--safe-r) 4px var(--safe-l); }
+.friends-search-row input{
+  flex:1; background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; color:var(--text); font-size:13px;
+}
+#friendsScroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:20px; }
+.friends-section-title{
+  padding:16px var(--safe-r) 6px var(--safe-l); font-size:11px; font-weight:800;
+  letter-spacing:.5px; color:var(--text-faint); text-transform:uppercase;
+}
+.friend-card, .request-card, .search-result-card{
+  display:flex; align-items:center; gap:11px;
+  margin:0 var(--safe-r) 8px var(--safe-l);
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:10px 12px;
+}
+.friend-avatar{
+  width:44px; height:44px; border-radius:50%; flex-shrink:0; overflow:hidden;
+  background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--text-faint);
+}
+.friend-avatar img{ width:100%; height:100%; object-fit:cover; }
+.friend-avatar svg{ width:100%; height:100%; padding:9px; }
+.friend-info{ flex:1; min-width:0; }
+.friend-name{ font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.friend-sub{ font-size:11.5px; color:var(--text-faint); }
+.friend-actions{ display:flex; gap:6px; flex-shrink:0; }
+.friend-actions button{
+  padding:7px 12px; border-radius:999px; font-size:11.5px; font-weight:700;
+  background:var(--red); color:var(--on-red);
+}
+.friend-actions button.secondary{ background:var(--surface-2); color:var(--text); border:1px solid var(--border); }
+.friends-empty{ text-align:center; padding:30px 20px; color:var(--text-faint); font-size:12.5px; }
+
+#profileScroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:18px var(--safe-r) 30px var(--safe-l); }
+.profile-header{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:14px 0 22px; }
+.profile-avatar-lg{
+  width:84px; height:84px; border-radius:50%; overflow:hidden;
+  background:var(--surface); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; color:var(--text-faint);
+}
+.profile-avatar-lg img{ width:100%; height:100%; object-fit:cover; }
+.profile-avatar-lg svg{ width:100%; height:100%; padding:18px; }
+.profile-name{ font-size:17px; font-weight:800; }
+.profile-username{ font-size:12.5px; color:var(--text-faint); }
+.profile-stats{ display:flex; gap:10px; width:100%; }
+.profile-stat{
+  flex:1; background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:12px; text-align:center;
+}
+.profile-stat .num{ font-size:19px; font-weight:800; }
+.profile-stat .lbl{ font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+.profile-cat-row{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:11px 12px; background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; margin-bottom:7px; font-size:12.5px;
+}
+.profile-cat-row .n{ color:var(--text-faint); font-weight:700; }
+
+.visibility-toggle{ display:flex; gap:8px; }
+.visibility-toggle button{
+  flex:1; padding:10px; border-radius:10px; font-size:12.5px; font-weight:700;
+  background:var(--surface); border:1px solid var(--border); color:var(--text-faint);
+}
+.visibility-toggle button.active{ background:var(--red); color:var(--on-red); border-color:var(--red); }
+
+/* ---------- Theme switch ---------- */
+.theme-switch-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:11px 12px; background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; margin-bottom:7px;
+}
+.theme-switch-labels{ display:flex; flex-direction:column; }
+.theme-switch-labels .lbl{ font-size:12.5px; font-weight:700; }
+.theme-switch-labels .sub{ font-size:10.5px; color:var(--text-faint); margin-top:1px; }
+.theme-switch{
+  width:50px; height:28px; border-radius:999px; position:relative; flex-shrink:0;
+  background:linear-gradient(90deg, #243B8F 0%, #243B8F 50%, #FFF0C9 50%, #FFF0C9 100%);
+  border:1px solid var(--border);
+}
+.theme-switch .knob{
+  position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%;
+  background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.4);
+  transition:transform .18s ease;
+}
+:root[data-theme="cream"] .theme-switch .knob{ transform:translateX(22px); }
 
 #searchBar{
   display:flex; align-items:center; gap:6px;
@@ -191,7 +315,7 @@ img{-webkit-user-drag:none;}
 #emptyState h2, #noResults h2{ font-size:15px; font-weight:700; margin:0;}
 #emptyState p, #noResults p{ font-size:12px; color:var(--text-dim); margin:0;}
 .big-add-btn{
-  background:var(--red); color:#fff; font-weight:700; font-size:12.5px;
+  background:var(--red); color:var(--on-red); font-weight:700; font-size:12.5px;
   padding:10px 18px; border-radius:999px; display:flex; align-items:center; gap:6px;
 }
 .big-add-btn svg{width:13px;height:13px;}
@@ -220,7 +344,7 @@ img{-webkit-user-drag:none;}
   font-size:12.5px; font-weight:600; text-align:left; width:100%;
 }
 .sb-item:active{ background:var(--surface-2);}
-.sb-item.active{ background:var(--red-soft); color:#fff;}
+.sb-item.active{ background:var(--red-soft); color:var(--text);}
 .sb-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0;}
 .sb-heart{ width:14px; height:14px; flex-shrink:0;}
 .sb-icon{ width:14px; height:14px; flex-shrink:0; opacity:.85;}
@@ -300,9 +424,9 @@ img{-webkit-user-drag:none;}
   text-align:center; display:flex; align-items:center; justify-content:center; gap:6px;
 }
 .btn svg{width:13px;height:13px;}
-.btn-primary{ background:var(--red); color:#fff;}
+.btn-primary{ background:var(--red); color:var(--on-red);}
 .btn-secondary{ background:var(--surface); border:1px solid var(--border); color:var(--text);}
-.btn-danger{ background:rgba(255,59,48,.14); color:var(--red); border:1px solid rgba(255,59,48,.3);}
+.btn-danger{ background:var(--danger-soft); color:var(--danger); border:1px solid rgba(255,59,48,.3);}
 .btn-block{width:100%;}
 
 /* full screen photo viewer */
@@ -347,7 +471,7 @@ img{-webkit-user-drag:none;}
   display:flex; align-items:center; justify-content:center;
 }
 .ph-del-btn{
-  background:var(--red); color:#fff; font-size:9.5px; font-weight:800;
+  background:var(--red); color:var(--on-red); font-size:9.5px; font-weight:800;
   letter-spacing:.4px; padding:8px 12px; border-radius:999px;
   display:flex; align-items:center; gap:5px;
 }
@@ -425,7 +549,7 @@ img{-webkit-user-drag:none;}
 .qi-copy-btn svg{ width:12px; height:12px;}
 .qi-copied-msg{
   position:absolute; top:-24px; left:50%; transform:translateX(-50%);
-  background:var(--red); color:#fff; font-size:9.5px; font-weight:800;
+  background:var(--red); color:var(--on-red); font-size:9.5px; font-weight:800;
   padding:3px 10px; border-radius:999px; white-space:nowrap;
   opacity:0; pointer-events:none; transition:opacity .18s ease;
 }
@@ -437,7 +561,7 @@ img{-webkit-user-drag:none;}
   overflow-x:auto; white-space:nowrap;
 }
 .qi-fill-btn{
-  margin-top:8px; width:100%; background:var(--red); color:#fff; border:none;
+  margin-top:8px; width:100%; background:var(--red); color:var(--on-red); border:none;
   border-radius:999px; padding:9px; font-size:11.5px; font-weight:700;
 }
 .packsize-row{ transition:opacity .15s ease;}
@@ -469,7 +593,7 @@ img{-webkit-user-drag:none;}
   width:100%; padding:11px; border-radius:var(--r-sm); font-size:12.5px; font-weight:700;
   background:var(--surface); border:1px solid var(--border);
 }
-.ctx-menu-btn.danger{ color:var(--red);}
+.ctx-menu-btn.danger{ color:var(--danger);}
 .ctx-menu-btn.cancel{ color:var(--text-faint); background:none; border:none; margin-top:2px;}
 
 /* ---------- Toast ---------- */
@@ -484,7 +608,7 @@ img{-webkit-user-drag:none;}
   box-shadow:0 8px 24px rgba(0,0,0,.4);
   max-width:calc(100% - 40px);
 }
-#toastUndo{ color:var(--red); font-weight:800; font-size:11.5px; padding:6px 10px; background:rgba(255,59,48,.14); border-radius:999px;}
+#toastUndo{ color:var(--danger); font-weight:800; font-size:11.5px; padding:6px 10px; background:var(--danger-soft); border-radius:999px;}
 
 /* ---------- Settings ---------- */
 .settings-section{ margin-bottom:18px;}
@@ -498,7 +622,7 @@ img{-webkit-user-drag:none;}
   background:var(--surface); border:1px solid var(--border); border-radius:999px;
   padding:7px 12px; font-size:11px; font-weight:700; flex-shrink:0;
 }
-.settings-row button.danger{ color:var(--red); border-color:rgba(255,59,48,.35);}
+.settings-row button.danger{ color:var(--danger); border-color:rgba(255,59,48,.35);}
 .app-info{ text-align:center; padding:16px 0; color:var(--text-faint); font-size:10.5px; line-height:1.6;}
 
 ::-webkit-scrollbar{ width:0; height:0;}
@@ -540,7 +664,7 @@ img{-webkit-user-drag:none;}
   flex:1; text-align:center; padding:9px 6px; border-radius:999px;
   font-size:12px; font-weight:800; letter-spacing:.3px; color:var(--text-faint);
 }
-.auth-tab.active{ background:var(--red); color:#fff;}
+.auth-tab.active{ background:var(--red); color:var(--on-red);}
 .auth-form.hidden{ display:none;}
 .pw-wrap{ position:relative;}
 .pw-wrap .field-input{ padding-right:42px;}
@@ -689,46 +813,108 @@ img{-webkit-user-drag:none;}
 </div>
 
 <div id="app" class="hidden">
-  <div id="topbar">
-    <button class="icon-btn" id="menuBtn" aria-label="Categories">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>
-    </button>
-    <div id="topbarTitle">
-      <div class="name" id="titleName">All</div>
-      <div class="count" id="titleCount">0 CARS</div>
-    </div>
-    <button class="icon-btn" id="searchBtn" aria-label="Search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    </button>
-  </div>
-
-  <div id="searchBar" class="hidden">
-    <button id="searchFieldBtn">
-      <span id="searchFieldLabel">Name</span>
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
-    </button>
-    <div id="searchInputWrap">
-      <input id="searchInput" placeholder="Search…" autocomplete="off">
-      <button id="searchClear" class="hidden">×</button>
-    </div>
-  </div>
-
-  <div id="collectionScroll">
-    <div id="collection"></div>
-    <div id="emptyState" class="hidden">
-      <h2>No cars yet</h2>
-      <p>Start your collection.</p>
-      <button class="big-add-btn" id="emptyAddBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Car
+  <div id="vaultScreen" class="app-screen active">
+    <div class="topbar">
+      <button class="icon-btn" id="menuBtn" aria-label="Categories">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>
+      </button>
+      <div class="topbar-title">
+        <div class="name" id="titleName">All</div>
+        <div class="count" id="titleCount">0 CARS</div>
+      </div>
+      <button class="icon-btn" id="searchBtn" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </button>
     </div>
-    <div id="noResults" class="hidden">
-      <h2>No cars found</h2>
-      <p>Try another search.</p>
+
+    <div id="searchBar" class="hidden">
+      <button id="searchFieldBtn">
+        <span id="searchFieldLabel">Name</span>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <div id="searchInputWrap">
+        <input id="searchInput" placeholder="Search…" autocomplete="off">
+        <button id="searchClear" class="hidden">×</button>
+      </div>
+    </div>
+
+    <div id="collectionScroll">
+      <div id="collection"></div>
+      <div id="emptyState" class="hidden">
+        <h2>No cars yet</h2>
+        <p>Start your collection.</p>
+        <button class="big-add-btn" id="emptyAddBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Car
+        </button>
+      </div>
+      <div id="noResults" class="hidden">
+        <h2>No cars found</h2>
+        <p>Try another search.</p>
+      </div>
+    </div>
+    <button class="fab-add" id="fabAdd" aria-label="Add car">+</button>
+  </div>
+
+  <!-- Friends screen -->
+  <div id="friendsScreen" class="app-screen">
+    <div class="topbar">
+      <div style="width:36px;"></div>
+      <div class="topbar-title"><div class="name">Friends</div></div>
+      <div style="width:36px;"></div>
+    </div>
+    <div id="friendsScroll">
+      <div class="friends-search-row">
+        <input id="friendSearchInput" placeholder="Search by @username…" autocomplete="off">
+        <button id="friendSearchBtn" class="btn btn-primary">Search</button>
+      </div>
+      <div id="friendSearchResults"></div>
+      <div id="friendRequestsSection"></div>
+      <div id="friendsListSection"></div>
     </div>
   </div>
-  <button class="fab-add" id="fabAdd" aria-label="Add car">+</button>
+
+  <!-- Friend's vault (read-only) -->
+  <div class="fullscreen-view hidden" id="friendVaultView">
+    <div class="fv-header">
+      <button class="icon-btn" id="friendVaultCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="fv-title" id="friendVaultTitle">Vault</div>
+      <button class="icon-btn" id="friendVaultMenuBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+      </button>
+    </div>
+    <div class="fv-body" id="friendVaultBody"></div>
+  </div>
+
+  <!-- Profile screen -->
+  <div id="profileScreen" class="app-screen">
+    <div class="topbar">
+      <div style="width:36px;"></div>
+      <div class="topbar-title"><div class="name">Profile</div></div>
+      <button class="icon-btn" id="profileSettingsBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div id="profileScroll"></div>
+  </div>
+
+  <div id="bottomNav">
+    <button class="nav-item active" id="navVault" data-screen="vaultScreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg>
+      <span>Vault</span>
+    </button>
+    <button class="nav-item" id="navFriends" data-screen="friendsScreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M15 14.2c2.7.3 5 2.4 5 5.8"/></svg>
+      <span>Friends</span>
+      <span class="nav-badge hidden" id="friendsBadge"></span>
+    </button>
+    <button class="nav-item" id="navProfile" data-screen="profileScreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <span>Profile</span>
+    </button>
+  </div>
 </div>
 
 <!-- Sidebar -->
@@ -750,7 +936,7 @@ img{-webkit-user-drag:none;}
     </button>
     <div class="fv-title" id="editTitle">Add Car</div>
     <button class="icon-btn" id="editSaveBtn" style="background:var(--red);border-color:var(--red);">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" style="stroke:var(--on-red);" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </button>
   </div>
   <div class="fv-body" id="editBody"></div>
@@ -819,6 +1005,16 @@ img{-webkit-user-drag:none;}
    CONSTANTS
    ============================================================ */
 var PHOTO_SLOTS = ["front","back","wheels","interior"];
+
+function setTheme(name){
+  if(name === "cream"){
+    document.documentElement.setAttribute("data-theme", "cream");
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    name = "blueberry";
+  }
+  try{ localStorage.setItem("dv-theme", name); }catch(e){}
+}
 var PHOTO_LABELS = {front:"FRONT", back:"BACK", wheels:"WHEELS", interior:"INTERIOR"};
 var SEARCH_FIELDS = [
   {key:"name", label:"Name"},
@@ -1503,7 +1699,7 @@ function openCategoryEditor(catId){
     '<input class="field-input" id="catNameInput" placeholder="Category name" value="'+esc(name)+'" style="margin-bottom:10px;">'+
     '<div class="color-grid" id="catColorGrid"></div>'+
     '<div class="modal-actions" style="margin-top:14px;">'+
-    '<button class="ctx-menu-btn" id="catSave" style="background:var(--red);color:#fff;">Save</button>'+
+    '<button class="ctx-menu-btn" id="catSave" style="background:var(--red);color:var(--on-red);">Save</button>'+
     '<button class="ctx-menu-btn cancel" id="catCancel">Cancel</button></div>';
 
   showModal(html, function(root){
@@ -1585,6 +1781,12 @@ function renderEditBody(car){
         heartIcon(car?car.favourite:false)+'<span style="margin-left:6px;">'+((car&&car.favourite)?"Favourited":"Add to Favourites")+'</span>'+
       '</button>'+
     '</div>'+
+    '<div class="field-group" id="fg-visibility"><label class="field-label">Visibility</label>'+
+      '<div class="visibility-toggle">'+
+        '<button type="button" id="f-visPrivate" class="'+((!car||car.visibility!=="friends")?"active":"")+'">Private</button>'+
+        '<button type="button" id="f-visFriends" class="'+((car&&car.visibility==="friends")?"active":"")+'">Friends</button>'+
+      '</div>'+
+    '</div>'+
 
     '<div class="qi-box">'+
       '<div class="qi-title"><span>Quick Import</span></div>'+
@@ -1614,6 +1816,15 @@ function renderEditBody(car){
     this.innerHTML = heartIcon(!pressed)+'<span style="margin-left:6px;">'+(!pressed?"Favourited":"Add to Favourites")+'</span>';
   });
   document.getElementById("f-favToggle").setAttribute("data-fav", (car&&car.favourite)?"1":"0");
+
+  document.getElementById("f-visPrivate").addEventListener("click", function(){
+    document.getElementById("f-visPrivate").classList.add("active");
+    document.getElementById("f-visFriends").classList.remove("active");
+  });
+  document.getElementById("f-visFriends").addEventListener("click", function(){
+    document.getElementById("f-visFriends").classList.add("active");
+    document.getElementById("f-visPrivate").classList.remove("active");
+  });
 
   updatePackSizeVisibility();
   document.getElementById("f-packagingType").addEventListener("change", updatePackSizeVisibility);
@@ -1894,7 +2105,7 @@ function showQiError(msg){
 
 function offerCreateCategory(name){
   var html = '<h3>Unknown Category</h3><p>"'+esc(name)+'" does not exist yet.</p><div class="modal-actions">'+
-    '<button class="ctx-menu-btn" id="qiCreateCat" style="background:var(--red);color:#fff;">Create "'+esc(name)+'"</button>'+
+    '<button class="ctx-menu-btn" id="qiCreateCat" style="background:var(--red);color:var(--on-red);">Create "'+esc(name)+'"</button>'+
     '<button class="ctx-menu-btn" id="qiPickCat">Choose Existing Category</button>'+
     '<button class="ctx-menu-btn cancel" id="qiSkip">Skip</button></div>';
   showModal(html, function(root){
@@ -1947,6 +2158,7 @@ function saveCarHandler(){
   var packagingType = document.getElementById("f-packagingType").value;
   var packSize = document.getElementById("f-packSize").value.trim();
   var favourite = document.getElementById("f-favToggle").getAttribute("data-fav")==="1";
+  var visibility = document.getElementById("f-visFriends").classList.contains("active") ? "friends" : "private";
 
   var ok = true;
   if(!name){ fieldError("name","Name is required."); ok=false; }
@@ -1964,7 +2176,7 @@ function saveCarHandler(){
     id: uid(), createdAt: Date.now(), order: Date.now()
   };
   car.name=name; car.brand=brand; car.year=year; car.extColor=extColor; car.intColor=intColor;
-  car.madeIn=madeIn; car.categoryIds=categoryIds; car.favourite=favourite;
+  car.madeIn=madeIn; car.categoryIds=categoryIds; car.favourite=favourite; car.visibility=visibility;
   delete car.categoryId; // superseded by categoryIds; avoid stale single-category leftovers
   car.packagingType=packagingType; car.packSize=packSize;
   car.photos = {
@@ -2183,7 +2395,16 @@ function renderSettings(){
         '<div class="settings-row"><div><div class="lbl">Delete Account</div><div class="sub">Permanently erase your vault</div></div><button class="danger" id="stDeleteAccount">Delete</button></div>'+
       '</div>';
   }
-  body.innerHTML = accountHtml +
+  var isCream = document.documentElement.getAttribute("data-theme") === "cream";
+  var themeHtml =
+    '<div class="settings-section">'+
+      '<div class="theme-switch-row" id="themeSwitchRow">'+
+        '<div class="theme-switch-labels"><div class="lbl">Theme</div><div class="sub" id="themeSubLabel">'+(isCream?"Cream Soda":"Blueberry")+'</div></div>'+
+        '<div class="theme-switch" id="themeSwitchToggle"><div class="knob"></div></div>'+
+      '</div>'+
+    '</div>';
+
+  body.innerHTML = accountHtml + themeHtml +
     '<div class="settings-section">'+
       '<div class="settings-row"><div><div class="lbl">Export Collection</div><div class="sub">Download a full JSON backup</div></div><button id="stExport">Export</button></div>'+
       '<div class="settings-row"><div><div class="lbl">Import Collection</div><div class="sub">Restore from a backup file</div></div><button id="stImport">Import</button></div>'+
@@ -2191,6 +2412,12 @@ function renderSettings(){
     '</div>'+
     '<div class="settings-section" id="storageInfo"></div>'+
     '<div class="app-info">Diecast Vault<br>Version '+APP_VERSION+'<br>'+state.cars.length+' cars stored locally</div>';
+
+  document.getElementById("themeSwitchToggle").addEventListener("click", function(){
+    var current = document.documentElement.getAttribute("data-theme") === "cream" ? "cream" : "blueberry";
+    setTheme(current === "cream" ? "blueberry" : "cream");
+    document.getElementById("themeSubLabel").textContent = (current === "cream") ? "Blueberry" : "Cream Soda";
+  });
 
   if(document.getElementById("stLogout")){
     document.getElementById("stLogout").addEventListener("click", function(){
@@ -2333,6 +2560,316 @@ window.addEventListener("unhandledrejection", function(e){
 });
 
 /* ============================================================
+   BOTTOM NAV / SCREEN SWITCHING
+   ============================================================ */
+function switchScreen(name){
+  document.querySelectorAll(".app-screen").forEach(function(el){ el.classList.toggle("active", el.id===name); });
+  document.querySelectorAll(".nav-item").forEach(function(el){ el.classList.toggle("active", el.getAttribute("data-screen")===name); });
+  if(name === "friendsScreen") renderFriendsScreen();
+  if(name === "profileScreen") renderProfileScreen();
+}
+document.getElementById("navVault").addEventListener("click", function(){ switchScreen("vaultScreen"); });
+document.getElementById("navFriends").addEventListener("click", function(){ switchScreen("friendsScreen"); });
+document.getElementById("navProfile").addEventListener("click", function(){ switchScreen("profileScreen"); });
+document.getElementById("profileSettingsBtn").addEventListener("click", openSettings);
+
+function avatarImgHtml(path){
+  var url = path ? window.DVAuth.avatarUrl(path) : null;
+  var icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>';
+  return url ? '<img src="'+url+'" alt="">' : icon;
+}
+
+/* ============================================================
+   FRIENDS — DATA LAYER
+   ============================================================ */
+function fetchIncomingRequests(){
+  return sbc().from("friend_requests").select("id, sender_id, created_at, profiles!friend_requests_sender_id_fkey(id,username,first_name,last_name,avatar_path)")
+    .eq("recipient_id", myUid()).eq("status","pending").order("created_at",{ascending:false})
+    .then(function(res){ if(res.error) throw res.error; return res.data || []; });
+}
+function fetchFriendsList(){
+  return sbc().from("friendships").select("id, user_a, user_b").or("user_a.eq."+myUid()+",user_b.eq."+myUid())
+    .then(function(res){
+      if(res.error) throw res.error;
+      var rows = res.data || [];
+      var otherIds = rows.map(function(r){ return r.user_a === myUid() ? r.user_b : r.user_a; });
+      if(!otherIds.length) return [];
+      return sbc().from("profiles").select("id,username,first_name,last_name,avatar_path").in("id", otherIds)
+        .then(function(res2){
+          if(res2.error) throw res2.error;
+          return res2.data || [];
+        });
+    });
+}
+function searchUsersByUsername(q){
+  q = q.trim().replace(/^@/, "");
+  if(!q) return Promise.resolve([]);
+  return sbc().from("profiles").select("id,username,first_name,last_name,avatar_path")
+    .ilike("username_lower", "%"+q.toLowerCase()+"%").neq("id", myUid()).limit(15)
+    .then(function(res){ if(res.error) throw res.error; return res.data || []; });
+}
+function sendFriendRequest(targetId){
+  return sbc().from("friend_requests").insert({ sender_id: myUid(), recipient_id: targetId }).then(function(res){
+    if(res.error){
+      if(res.error.code === "23505") throw new Error("Request already sent.");
+      throw new Error("Could not send request — they may have blocked you, or you're already friends.");
+    }
+  });
+}
+function acceptFriendRequest(reqId){
+  return sbc().rpc("accept_friend_request", { request_id: reqId }).then(function(res){ if(res.error) throw res.error; });
+}
+function declineFriendRequest(reqId){
+  return sbc().from("friend_requests").delete().eq("id", reqId).then(function(res){ if(res.error) throw res.error; });
+}
+function removeFriendship(otherId){
+  return sbc().from("friendships").delete().or(
+    "and(user_a.eq."+myUid()+",user_b.eq."+otherId+"),and(user_a.eq."+otherId+",user_b.eq."+myUid()+")"
+  ).then(function(res){ if(res.error) throw res.error; });
+}
+function blockUserById(targetId){
+  return sbc().rpc("block_user", { target: targetId }).then(function(res){ if(res.error) throw res.error; });
+}
+
+/* ============================================================
+   FRIENDS — SCREEN
+   ============================================================ */
+function friendPersonRow(p, actionsHtml, cardClass){
+  return '<div class="'+(cardClass||"friend-card")+'" data-uid="'+p.id+'">'+
+    '<div class="friend-avatar">'+avatarImgHtml(p.avatar_path)+'</div>'+
+    '<div class="friend-info"><div class="friend-name">'+esc(p.first_name)+' '+esc(p.last_name)+'</div><div class="friend-sub">@'+esc(p.username)+'</div></div>'+
+    '<div class="friend-actions">'+actionsHtml+'</div>'+
+  '</div>';
+}
+
+function renderFriendsScreen(){
+  var badge = document.getElementById("friendsBadge");
+  document.getElementById("friendSearchResults").innerHTML = "";
+  document.getElementById("friendRequestsSection").innerHTML = '<div class="friends-section-title">Friend Requests</div><div class="friends-empty">Loading…</div>';
+  document.getElementById("friendsListSection").innerHTML = '<div class="friends-section-title">My Friends</div><div class="friends-empty">Loading…</div>';
+
+  fetchIncomingRequests().then(function(reqs){
+    var section = document.getElementById("friendRequestsSection");
+    if(!reqs.length){ section.innerHTML = ""; }
+    else{
+      section.innerHTML = '<div class="friends-section-title">Friend Requests</div>' +
+        reqs.map(function(r){
+          var p = r.profiles;
+          return friendPersonRow(p,
+            '<button data-accept="'+r.id+'">Accept</button>'+
+            '<button class="secondary" data-decline="'+r.id+'">Decline</button>',
+            "request-card"
+          );
+        }).join("");
+      section.querySelectorAll("[data-accept]").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          acceptFriendRequest(btn.getAttribute("data-accept")).then(function(){
+            showToast("Friend request accepted."); renderFriendsScreen();
+          }).catch(function(err){ showToast(err.message || "Could not accept request."); });
+        });
+      });
+      section.querySelectorAll("[data-decline]").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          declineFriendRequest(btn.getAttribute("data-decline")).then(function(){ renderFriendsScreen(); })
+            .catch(function(err){ showToast(err.message || "Could not decline request."); });
+        });
+      });
+    }
+    if(badge) badge.classList.toggle("hidden", reqs.length === 0);
+  }).catch(function(err){
+    document.getElementById("friendRequestsSection").innerHTML = "";
+    console.error(err);
+  });
+
+  fetchFriendsList().then(function(friends){
+    var section = document.getElementById("friendsListSection");
+    if(!friends.length){
+      section.innerHTML = '<div class="friends-section-title">My Friends</div><div class="friends-empty">No friends yet — search a username above to add one.</div>';
+      return;
+    }
+    section.innerHTML = '<div class="friends-section-title">My Friends</div>' +
+      friends.map(function(p){
+        return friendPersonRow(p, '<button class="secondary" data-open="'+p.id+'">View</button>');
+      }).join("");
+    section.querySelectorAll("[data-open]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var uid2 = btn.getAttribute("data-open");
+        var p = friends.find(function(f){ return f.id === uid2; });
+        openFriendVault(p);
+      });
+    });
+  }).catch(function(err){
+    document.getElementById("friendsListSection").innerHTML = "";
+    console.error(err);
+  });
+}
+
+function refreshFriendsBadge(){
+  fetchIncomingRequests().then(function(reqs){
+    var badge = document.getElementById("friendsBadge");
+    if(badge) badge.classList.toggle("hidden", reqs.length === 0);
+  }).catch(function(){});
+}
+
+document.getElementById("friendSearchBtn").addEventListener("click", runFriendSearch);
+document.getElementById("friendSearchInput").addEventListener("keydown", function(e){ if(e.key === "Enter") runFriendSearch(); });
+function runFriendSearch(){
+  var q = document.getElementById("friendSearchInput").value;
+  var box = document.getElementById("friendSearchResults");
+  if(!q.trim()){ box.innerHTML = ""; return; }
+  box.innerHTML = '<div class="friends-empty">Searching…</div>';
+  searchUsersByUsername(q).then(function(results){
+    if(!results.length){ box.innerHTML = '<div class="friends-empty">No users found.</div>'; return; }
+    box.innerHTML = results.map(function(p){
+      return friendPersonRow(p, '<button data-add="'+p.id+'">Add Friend</button>', "search-result-card");
+    }).join("");
+    box.querySelectorAll("[data-add]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        sendFriendRequest(btn.getAttribute("data-add")).then(function(){
+          showToast("Friend request sent."); btn.textContent = "Sent"; btn.disabled = true;
+        }).catch(function(err){ showToast(err.message || "Could not send request."); });
+      });
+    });
+  }).catch(function(){ box.innerHTML = '<div class="friends-empty">Search failed. Try again.</div>'; });
+}
+
+/* ---- friend's vault (read-only) ---- */
+var friendVaultState = { profile: null, cars: [] };
+
+function fetchFriendVaultCars(friendId){
+  return sbc().from("cars").select("*, car_categories(category_id)").eq("owner_id", friendId).order("created_at",{ascending:false})
+    .then(function(res){
+      if(res.error) throw res.error;
+      var rows = res.data || [];
+      var pathMeta = [];
+      rows.forEach(function(r){
+        PHOTO_SLOTS.forEach(function(slot){
+          if(r.photos && r.photos[slot]) pathMeta.push({carId:r.id, slot:slot, path:friendId+"/"+r.id+"/"+slot+".jpg"});
+        });
+      });
+      return signedUrlsForPaths(pathMeta.map(function(m){return m.path;})).then(function(urlMap){
+        return rows.map(function(r){
+          var photos = {};
+          pathMeta.filter(function(m){return m.carId===r.id;}).forEach(function(m){ photos[m.slot] = urlMap[m.path] || null; });
+          return { id:r.id, name:r.name, year:r.year, favourite:r.favorite, photos:photos };
+        });
+      });
+    });
+}
+
+function openFriendVault(profile){
+  friendVaultState.profile = profile;
+  document.getElementById("friendVaultTitle").textContent = profile.first_name + "'s Vault";
+  document.getElementById("friendVaultBody").innerHTML = '<div class="friends-empty">Loading…</div>';
+  document.getElementById("friendVaultView").classList.remove("hidden");
+  fetchFriendVaultCars(profile.id).then(function(cars){
+    friendVaultState.cars = cars;
+    renderFriendVault();
+  }).catch(function(){
+    document.getElementById("friendVaultBody").innerHTML = '<div class="friends-empty">Could not load this vault.</div>';
+  });
+}
+function renderFriendVault(){
+  var body = document.getElementById("friendVaultBody");
+  var cars = friendVaultState.cars;
+  if(!cars.length){
+    body.innerHTML = '<div class="friends-empty" style="padding:60px 20px;">No cars visible here yet.</div>';
+    return;
+  }
+  body.innerHTML = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px var(--safe-r) 24px var(--safe-l);">' +
+    cars.map(function(car, i){
+      var photo = car.photos.front || car.photos.back || car.photos.wheels || car.photos.interior;
+      var heart = car.favourite ? '<div class="heart">'+heartIcon(true)+'</div>' : "";
+      return '<div class="car-card" data-idx="'+i+'">'+
+        '<div class="photo">'+(photo?'<img src="'+photo+'" alt="">':'<div class="ph-icon">'+carSilhouette()+'</div>')+heart+'</div>'+
+        '<div class="info"><div class="cname">'+esc(car.name)+'</div><div class="cyear">'+esc(car.year||"")+'</div></div>'+
+      '</div>';
+    }).join("") +
+  '</div>';
+  body.querySelectorAll(".car-card").forEach(function(el){
+    el.addEventListener("click", function(){
+      var car = cars[+el.getAttribute("data-idx")];
+      var imgs = PHOTO_SLOTS.map(function(s){ return car.photos[s]; }).filter(Boolean);
+      if(imgs.length) openPhotoViewer(imgs, 0);
+    });
+  });
+}
+document.getElementById("friendVaultCloseBtn").addEventListener("click", function(){
+  document.getElementById("friendVaultView").classList.add("hidden");
+});
+document.getElementById("friendVaultMenuBtn").addEventListener("click", function(){
+  if(!friendVaultState.profile) return;
+  var p = friendVaultState.profile;
+  openActionSheet([
+    { label: "Remove Friend", danger:true, action: function(){
+      confirmDialog("Remove "+p.first_name+"?", "You'll no longer see each other's friends-visible cars.", "Remove", function(){
+        removeFriendship(p.id).then(function(){
+          showToast("Friend removed.");
+          document.getElementById("friendVaultView").classList.add("hidden");
+          renderFriendsScreen();
+        }).catch(function(){ showToast("Could not remove friend."); });
+      }, true);
+    }},
+    { label: "Block "+p.first_name, danger:true, action: function(){
+      confirmDialog("Block "+p.first_name+"?", "They won't be able to see your collection or send you requests again unless you unblock them later.", "Block", function(){
+        blockUserById(p.id).then(function(){
+          showToast("User blocked.");
+          document.getElementById("friendVaultView").classList.add("hidden");
+          renderFriendsScreen();
+        }).catch(function(){ showToast("Could not block user."); });
+      }, true);
+    }}
+  ]);
+});
+
+// Minimal action sheet built from the existing modal card, since it's
+// already used for context menus elsewhere in the app.
+function openActionSheet(items){
+  var card = document.getElementById("modalCard");
+  card.innerHTML = items.map(function(it,i){
+    return '<button class="ctx-menu-btn'+(it.danger?" danger":"")+'" data-i="'+i+'">'+esc(it.label)+'</button>';
+  }).join("") + '<button class="ctx-menu-btn cancel" data-cancel="1">Cancel</button>';
+  document.getElementById("modalOverlay").classList.remove("hidden");
+  card.querySelectorAll("[data-i]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.getElementById("modalOverlay").classList.add("hidden");
+      items[+btn.getAttribute("data-i")].action();
+    });
+  });
+  card.querySelector("[data-cancel]").addEventListener("click", function(){
+    document.getElementById("modalOverlay").classList.add("hidden");
+  });
+}
+
+/* ============================================================
+   PROFILE SCREEN
+   ============================================================ */
+function renderProfileScreen(){
+  var box = document.getElementById("profileScroll");
+  var prof = window.DVAuth.profile;
+  if(!prof){ box.innerHTML = ""; return; }
+  var memberSince = new Date(prof.created_at).toLocaleDateString(undefined, { month:"long", year:"numeric" });
+  var favCount = state.cars.filter(function(c){return c.favourite;}).length;
+
+  box.innerHTML =
+    '<div class="profile-header">' +
+      '<div class="profile-avatar-lg">'+avatarImgHtml(prof.avatar_path)+'</div>' +
+      '<div class="profile-name">'+esc(prof.first_name)+' '+esc(prof.last_name)+'</div>' +
+      '<div class="profile-username">@'+esc(prof.username)+' · Member since '+memberSince+'</div>' +
+    '</div>' +
+    '<div class="profile-stats">' +
+      '<div class="profile-stat"><div class="num">'+state.cars.length+'</div><div class="lbl">Cars</div></div>' +
+      '<div class="profile-stat"><div class="num">'+favCount+'</div><div class="lbl">Favourites</div></div>' +
+      '<div class="profile-stat"><div class="num">'+state.categories.length+'</div><div class="lbl">Categories</div></div>' +
+    '</div>' +
+    '<div class="friends-section-title" style="padding-left:0;">Categories</div>' +
+    state.categories.map(function(cat){
+      var n = state.cars.filter(function(c){ return carCategoryIds(c).indexOf(cat.id) !== -1; }).length;
+      return '<div class="profile-cat-row"><span>'+esc(cat.name)+'</span><span class="n">'+n+'</span></div>';
+    }).join("");
+}
+
+/* ============================================================
    INIT
    ============================================================ */
 function initApp(){
@@ -2340,6 +2877,7 @@ function initApp(){
     .then(loadAll)
     .then(function(){
       renderCollection();
+      refreshFriendsBadge();
     })
     .catch(function(err){
       console.error("App init failed", err);
