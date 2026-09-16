@@ -167,11 +167,18 @@ img{-webkit-user-drag:none;}
 
 #profileScroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:18px var(--safe-r) 30px var(--safe-l); }
 .profile-header{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:14px 0 22px; }
+.profile-avatar-wrap{ position:relative; width:84px; height:84px; }
 .profile-avatar-lg{
-  width:84px; height:84px; border-radius:50%; overflow:hidden;
+  width:100%; height:100%; border-radius:50%; overflow:hidden;
   background:var(--surface); border:1px solid var(--border);
   display:flex; align-items:center; justify-content:center; color:var(--text-faint);
 }
+.avatar-edit-badge{
+  position:absolute; right:-2px; bottom:-2px; width:26px; height:26px; border-radius:50%;
+  background:var(--red); color:var(--on-red); border:2px solid var(--bg);
+  display:flex; align-items:center; justify-content:center;
+}
+.avatar-edit-badge svg{ width:13px; height:13px; }
 .profile-avatar-lg img{ width:100%; height:100%; object-fit:cover; }
 .profile-avatar-lg svg{ width:100%; height:100%; padding:18px; }
 .profile-name{ font-size:17px; font-weight:800; }
@@ -1213,7 +1220,7 @@ function sbDeleteCategory(id){
 }
 
 function sbGetAllCars(){
-  return sbc().from("cars").select("*, car_categories(category_id)").order("created_at", { ascending: false })
+  return sbc().from("cars").select("*, car_categories(category_id)").eq("owner_id", myUid()).order("created_at", { ascending: false })
     .then(function(res){
       if(res.error) throw res.error;
       var rows = res.data || [];
@@ -2931,7 +2938,9 @@ function renderProfileScreen(){
 
   box.innerHTML =
     '<div class="profile-header">' +
-      '<div class="profile-avatar-lg">'+avatarImgHtml(prof.avatar_path)+'</div>' +
+      '<div class="profile-avatar-wrap" id="profileAvatarBtn"><div class="profile-avatar-lg">'+avatarImgHtml(prof.avatar_path)+'</div><div class="avatar-edit-badge">'+editPencilIcon()+'</div></div>' +
+      '<input type="file" id="profileAvatarUpload" accept="image/*" style="display:none">' +
+      '<input type="file" id="profileAvatarCamera" accept="image/*" capture="user" style="display:none">' +
       '<div class="profile-name">'+esc(prof.first_name)+' '+esc(prof.last_name)+'</div>' +
       '<div class="profile-username">@'+esc(prof.username)+' · Member since '+memberSince+'</div>' +
     '</div>' +
@@ -2945,6 +2954,43 @@ function renderProfileScreen(){
       var n = state.cars.filter(function(c){ return carCategoryIds(c).indexOf(cat.id) !== -1; }).length;
       return '<div class="profile-cat-row"><span>'+esc(cat.name)+'</span><span class="n">'+n+'</span></div>';
     }).join("");
+
+  document.getElementById("profileAvatarBtn").addEventListener("click", function(){
+    openActionSheet([
+      { label: "Upload Photo", action: function(){ document.getElementById("profileAvatarUpload").click(); } },
+      { label: "Take Photo", action: function(){ document.getElementById("profileAvatarCamera").click(); } }
+    ]);
+  });
+  document.getElementById("profileAvatarUpload").addEventListener("change", handleProfileAvatarFile);
+  document.getElementById("profileAvatarCamera").addEventListener("change", handleProfileAvatarFile);
+}
+
+function editPencilIcon(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
+}
+
+function handleProfileAvatarFile(e){
+  var file = e.target.files && e.target.files[0];
+  if(!file) return;
+  var uidVal = myUid();
+  var path = uidVal + "/avatar-" + Date.now() + "." + (file.type.split("/")[1] || "jpg");
+  showToast("Uploading photo…");
+  sbc().storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type })
+    .then(function(res){
+      if(res.error) throw res.error;
+      return sbc().from("profiles").update({ avatar_path: path }).eq("id", uidVal);
+    })
+    .then(function(res){
+      if(res.error) throw res.error;
+      window.DVAuth.profile.avatar_path = path;
+      showToast("Profile picture updated.");
+      renderProfileScreen();
+      renderSettings();
+    })
+    .catch(function(err){
+      console.error(err);
+      showToast("Could not update profile picture.");
+    });
 }
 
 /* ============================================================
