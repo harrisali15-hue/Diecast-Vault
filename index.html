@@ -412,6 +412,11 @@ img{-webkit-user-drag:none;}
 .fcd-row:last-child{ border-bottom:none; }
 .fcd-label{ color:var(--text-faint); font-weight:600; }
 .fcd-value{ font-weight:700; text-align:right; }
+.status-badge{
+  display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:800;
+}
+.status-badge.active{ background:rgba(60,180,90,.16); color:#3cb45a; }
+.status-badge.suspended{ background:var(--danger-soft); color:var(--danger); }
 
 /* car detail */
 .cv-imgwrap{
@@ -945,6 +950,33 @@ img{-webkit-user-drag:none;}
     <div id="profileScroll"></div>
   </div>
 
+  <!-- Admin screen -->
+  <div id="adminScreen" class="app-screen">
+    <div class="topbar">
+      <div style="width:36px;"></div>
+      <div class="topbar-title"><div class="name">Admin</div></div>
+      <div style="width:36px;"></div>
+    </div>
+    <div id="adminScroll">
+      <div class="friends-search-row">
+        <input id="adminSearchInput" placeholder="Search users…" autocomplete="off">
+      </div>
+      <div id="adminUserList"></div>
+    </div>
+  </div>
+
+  <!-- Admin user detail -->
+  <div class="fullscreen-view hidden" id="adminUserDetailView">
+    <div class="fv-header">
+      <button class="icon-btn" id="adminUserDetailCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="fv-title">Account</div>
+      <div style="width:36px;"></div>
+    </div>
+    <div class="fv-body" id="adminUserDetailBody"></div>
+  </div>
+
   <div id="bottomNav">
     <button class="nav-item active" id="navVault" data-screen="vaultScreen">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg>
@@ -958,6 +990,10 @@ img{-webkit-user-drag:none;}
     <button class="nav-item" id="navProfile" data-screen="profileScreen">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
       <span>Profile</span>
+    </button>
+    <button class="nav-item hidden" id="navAdmin" data-screen="adminScreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>
+      <span>Admin</span>
     </button>
   </div>
 </div>
@@ -2612,10 +2648,12 @@ function switchScreen(name){
   document.querySelectorAll(".nav-item").forEach(function(el){ el.classList.toggle("active", el.getAttribute("data-screen")===name); });
   if(name === "friendsScreen") renderFriendsScreen();
   if(name === "profileScreen") renderProfileScreen();
+  if(name === "adminScreen") renderAdminScreen();
 }
 document.getElementById("navVault").addEventListener("click", function(){ switchScreen("vaultScreen"); });
 document.getElementById("navFriends").addEventListener("click", function(){ switchScreen("friendsScreen"); });
 document.getElementById("navProfile").addEventListener("click", function(){ switchScreen("profileScreen"); });
+document.getElementById("navAdmin").addEventListener("click", function(){ switchScreen("adminScreen"); });
 document.getElementById("profileSettingsBtn").addEventListener("click", openSettings);
 
 function avatarImgHtml(path){
@@ -2994,6 +3032,130 @@ function handleProfileAvatarFile(e){
 }
 
 /* ============================================================
+   ADMIN DASHBOARD
+   ============================================================ */
+var adminState = { users: [] };
+
+function fetchAdminUserList(){
+  return sbc().rpc("admin_list_users").then(function(res){ if(res.error) throw res.error; return res.data || []; });
+}
+function fetchAdminUserDetail(targetId){
+  return sbc().rpc("admin_user_detail", { target: targetId }).then(function(res){
+    if(res.error) throw res.error;
+    return (res.data && res.data[0]) || null;
+  });
+}
+function adminSetStatus(targetId, newStatus){
+  return sbc().rpc("admin_set_status", { target: targetId, new_status: newStatus }).then(function(res){ if(res.error) throw res.error; });
+}
+function adminDeleteUser(targetId){
+  return sbc().rpc("admin_delete_user", { target: targetId }).then(function(res){ if(res.error) throw res.error; });
+}
+
+function maybeShowAdminTab(){
+  var prof = window.DVAuth.profile;
+  document.getElementById("navAdmin").classList.toggle("hidden", !(prof && prof.role === "admin"));
+}
+
+function renderAdminScreen(){
+  var list = document.getElementById("adminUserList");
+  list.innerHTML = '<div class="friends-empty">Loading…</div>';
+  fetchAdminUserList().then(function(users){
+    adminState.users = users;
+    renderAdminUserList(document.getElementById("adminSearchInput").value);
+  }).catch(function(err){
+    console.error(err);
+    list.innerHTML = '<div class="friends-empty">Could not load users.</div>';
+  });
+}
+function renderAdminUserList(filterText){
+  var list = document.getElementById("adminUserList");
+  var q = (filterText||"").trim().toLowerCase();
+  var users = adminState.users.filter(function(u){
+    if(!q) return true;
+    return (u.username||"").toLowerCase().indexOf(q) !== -1 ||
+           (u.first_name+" "+u.last_name).toLowerCase().indexOf(q) !== -1;
+  });
+  if(!users.length){ list.innerHTML = '<div class="friends-empty">No users found.</div>'; return; }
+  list.innerHTML = users.map(function(u){
+    var memberSince = new Date(u.created_at).toLocaleDateString(undefined,{month:"short",year:"numeric"});
+    var statusTag = u.status === "suspended" ? '<span class="status-badge suspended">Suspended</span>' : '';
+    return '<div class="friend-card" data-open="'+u.id+'">'+
+      '<div class="friend-avatar">'+avatarImgHtml(u.avatar_path)+'</div>'+
+      '<div class="friend-info"><div class="friend-name">'+esc(u.first_name)+' '+esc(u.last_name)+' '+statusTag+'</div>'+
+      '<div class="friend-sub">@'+esc(u.username)+' · '+u.car_count+' cars · since '+memberSince+'</div></div>'+
+    '</div>';
+  }).join("");
+  list.querySelectorAll("[data-open]").forEach(function(el){
+    el.addEventListener("click", function(){ openAdminUserDetail(el.getAttribute("data-open")); });
+  });
+}
+document.getElementById("adminSearchInput").addEventListener("input", function(){
+  renderAdminUserList(this.value);
+});
+
+function openAdminUserDetail(userId){
+  var body = document.getElementById("adminUserDetailBody");
+  body.innerHTML = '<div class="friends-empty">Loading…</div>';
+  document.getElementById("adminUserDetailView").classList.remove("hidden");
+  fetchAdminUserDetail(userId).then(function(u){
+    if(!u){ body.innerHTML = '<div class="friends-empty">Could not load this account.</div>'; return; }
+    var memberSince = new Date(u.created_at).toLocaleDateString(undefined,{month:"long",year:"numeric"});
+    var dob = u.date_of_birth ? new Date(u.date_of_birth).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"}) : "—";
+    var catCounts = u.category_counts || {};
+    var catRows = Object.keys(catCounts).map(function(name){
+      return '<div class="fcd-row"><span class="fcd-label">'+esc(name)+'</span><span class="fcd-value">'+catCounts[name]+'</span></div>';
+    }).join("");
+    var isSuspended = u.status === "suspended";
+
+    body.innerHTML =
+      '<div class="profile-header">'+
+        '<div class="profile-avatar-wrap"><div class="profile-avatar-lg">'+avatarImgHtml(u.avatar_path)+'</div></div>'+
+        '<div class="profile-name">'+esc(u.first_name)+' '+esc(u.last_name)+'</div>'+
+        '<div class="profile-username">@'+esc(u.username)+'</div>'+
+        '<div class="status-badge '+(isSuspended?"suspended":"active")+'" style="margin-top:6px;">'+(isSuspended?"Suspended":"Active")+'</div>'+
+      '</div>'+
+      '<div class="fcd-details" style="margin-bottom:16px;">'+
+        friendDetailRow("Date of Birth", dob)+
+        friendDetailRow("Member Since", memberSince)+
+        friendDetailRow("Total Cars", String(u.car_count))+
+      '</div>'+
+      (catRows ? '<div class="friends-section-title" style="padding-left:0;">Categories</div><div class="fcd-details" style="margin-bottom:16px;">'+catRows+'</div>' : '')+
+      '<button class="btn btn-secondary btn-block" id="adminToggleSuspendBtn" style="margin-bottom:10px;">'+(isSuspended?"Reactivate Account":"Suspend Account")+'</button>'+
+      '<button class="btn btn-danger btn-block" id="adminDeleteUserBtn">Delete Account</button>';
+
+    document.getElementById("adminToggleSuspendBtn").addEventListener("click", function(){
+      var next = isSuspended ? "active" : "suspended";
+      var msg = isSuspended ? "They'll be able to sign in and use the app again." : "They won't be able to sign in or use the app until reactivated.";
+      confirmDialog((isSuspended?"Reactivate":"Suspend")+" "+u.first_name+"?", msg, isSuspended?"Reactivate":"Suspend", function(){
+        adminSetStatus(u.id, next).then(function(){
+          showToast("Account "+(isSuspended?"reactivated":"suspended")+".");
+          openAdminUserDetail(u.id);
+          renderAdminScreen();
+        }).catch(function(){ showToast("Could not update account status."); });
+      }, !isSuspended);
+    });
+    document.getElementById("adminDeleteUserBtn").addEventListener("click", function(){
+      confirmDialog("Delete "+u.first_name+"'s account?", "This permanently erases their account and entire collection. This cannot be undone.", "Continue", function(){
+        confirmDialog("Are you absolutely sure?", "@"+u.username+"'s account and all data will be permanently deleted.", "Delete Account", function(){
+          adminDeleteUser(u.id).then(function(){
+            showToast("Account deleted.");
+            document.getElementById("adminUserDetailView").classList.add("hidden");
+            renderAdminScreen();
+          }).catch(function(){ showToast("Could not delete account."); });
+        }, true);
+      }, true);
+    });
+  }).catch(function(err){
+    console.error(err);
+    body.innerHTML = '<div class="friends-empty">Could not load this account.</div>';
+  });
+}
+document.getElementById("adminUserDetailCloseBtn").addEventListener("click", function(){
+  document.getElementById("adminUserDetailView").classList.add("hidden");
+});
+
+/* ============================================================
    INIT
    ============================================================ */
 function initApp(){
@@ -3002,6 +3164,7 @@ function initApp(){
     .then(function(){
       renderCollection();
       refreshFriendsBadge();
+      maybeShowAdminTab();
     })
     .catch(function(err){
       console.error("App init failed", err);
