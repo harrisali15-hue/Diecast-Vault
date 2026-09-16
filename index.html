@@ -248,13 +248,13 @@ img{-webkit-user-drag:none;}
   -webkit-overflow-scrolling:touch;
   padding:2px var(--safe-r) calc(var(--safe-b) + 8px) var(--safe-l);
 }
-#collection{
+#collection, .collection-grid{
   display:grid;
   grid-template-columns:repeat(2, 1fr);
   gap:9px;
 }
-@media (min-width:420px){ #collection{grid-template-columns:repeat(3,1fr);} }
-@media (min-width:700px){ #collection{grid-template-columns:repeat(4,1fr);} }
+@media (min-width:420px){ #collection{grid-template-columns:repeat(3,1fr);} .collection-grid{grid-template-columns:repeat(3,1fr);} }
+@media (min-width:700px){ #collection{grid-template-columns:repeat(4,1fr);} .collection-grid{grid-template-columns:repeat(4,1fr);} }
 
 .car-card{
   position:relative;
@@ -379,6 +379,32 @@ img{-webkit-user-drag:none;}
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .fv-body{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:0 var(--safe-r) calc(var(--safe-b) + 10px) var(--safe-l);}
+
+.fcd-photo{
+  width:100%; aspect-ratio:4/3; border-radius:var(--r-md); overflow:hidden;
+  background:var(--surface); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; color:var(--text-faint);
+  margin-bottom:10px;
+}
+.fcd-photo img{ width:100%; height:100%; object-fit:cover; cursor:pointer; }
+.fcd-thumbs{ display:flex; gap:8px; margin-bottom:16px; }
+.fcd-thumb{
+  width:56px; height:56px; border-radius:10px; overflow:hidden;
+  border:1px solid var(--border); background:var(--surface);
+}
+.fcd-thumb img{ width:100%; height:100%; object-fit:cover; }
+.fcd-name{ font-size:17px; font-weight:800; margin-bottom:12px; }
+.fcd-details{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
+  overflow:hidden;
+}
+.fcd-row{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:11px 13px; font-size:12.5px; border-bottom:1px solid var(--border);
+}
+.fcd-row:last-child{ border-bottom:none; }
+.fcd-label{ color:var(--text-faint); font-weight:600; }
+.fcd-value{ font-weight:700; text-align:right; }
 
 /* car detail */
 .cv-imgwrap{
@@ -886,6 +912,18 @@ img{-webkit-user-drag:none;}
       </button>
     </div>
     <div class="fv-body" id="friendVaultBody"></div>
+  </div>
+
+  <!-- Read-only detail view for a friend's car -->
+  <div class="fullscreen-view hidden" id="friendCarDetailView">
+    <div class="fv-header">
+      <button class="icon-btn" id="friendCarDetailCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="fv-title">Car Details</div>
+      <div style="width:36px;"></div>
+    </div>
+    <div class="fv-body" id="friendCarDetailBody"></div>
   </div>
 
   <!-- Profile screen -->
@@ -1783,8 +1821,8 @@ function renderEditBody(car){
     '</div>'+
     '<div class="field-group" id="fg-visibility"><label class="field-label">Visibility</label>'+
       '<div class="visibility-toggle">'+
-        '<button type="button" id="f-visPrivate" class="'+((!car||car.visibility!=="friends")?"active":"")+'">Private</button>'+
-        '<button type="button" id="f-visFriends" class="'+((car&&car.visibility==="friends")?"active":"")+'">Friends</button>'+
+        '<button type="button" id="f-visPrivate" class="'+((car&&car.visibility!=="friends")?"active":"")+'">Private</button>'+
+        '<button type="button" id="f-visFriends" class="'+((!car||car.visibility==="friends")?"active":"")+'">Friends</button>'+
       '</div>'+
     '</div>'+
 
@@ -2751,7 +2789,12 @@ function fetchFriendVaultCars(friendId){
         return rows.map(function(r){
           var photos = {};
           pathMeta.filter(function(m){return m.carId===r.id;}).forEach(function(m){ photos[m.slot] = urlMap[m.path] || null; });
-          return { id:r.id, name:r.name, year:r.year, favourite:r.favorite, photos:photos };
+          return {
+            id:r.id, name:r.name, brand:r.brand, year:r.year,
+            extColor:r.ext_color, intColor:r.int_color, madeIn:r.made_in,
+            packagingType:r.packaging_type, packSize:r.pack_size,
+            favourite:r.favorite, photos:photos
+          };
         });
       });
     });
@@ -2776,7 +2819,7 @@ function renderFriendVault(){
     body.innerHTML = '<div class="friends-empty" style="padding:60px 20px;">No cars visible here yet.</div>';
     return;
   }
-  body.innerHTML = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px var(--safe-r) 24px var(--safe-l);">' +
+  body.innerHTML = '<div class="collection-grid" style="padding:12px var(--safe-r) 24px var(--safe-l);">' +
     cars.map(function(car, i){
       var photo = car.photos.front || car.photos.back || car.photos.wheels || car.photos.interior;
       var heart = car.favourite ? '<div class="heart">'+heartIcon(true)+'</div>' : "";
@@ -2788,12 +2831,47 @@ function renderFriendVault(){
   '</div>';
   body.querySelectorAll(".car-card").forEach(function(el){
     el.addEventListener("click", function(){
-      var car = cars[+el.getAttribute("data-idx")];
-      var imgs = PHOTO_SLOTS.map(function(s){ return car.photos[s]; }).filter(Boolean);
-      if(imgs.length) openPhotoViewer(imgs, 0);
+      openFriendCarDetail(cars[+el.getAttribute("data-idx")]);
     });
   });
 }
+
+/* ---- read-only detail view for a friend's car (no edit/delete controls) ---- */
+function friendDetailRow(label, value){
+  if(!value) return "";
+  return '<div class="fcd-row"><span class="fcd-label">'+esc(label)+'</span><span class="fcd-value">'+esc(value)+'</span></div>';
+}
+function openFriendCarDetail(car){
+  var imgs = PHOTO_SLOTS.map(function(s){ return car.photos[s]; }).filter(Boolean);
+  var photo = imgs[0];
+  var packagingLine = car.packagingType ?
+    (car.packagingType === "Multi-Pack" && car.packSize ? car.packagingType+" ("+car.packSize+")" : car.packagingType)
+    : "";
+
+  document.getElementById("friendCarDetailBody").innerHTML =
+    '<div class="fcd-photo">'+(photo?'<img src="'+photo+'" alt="">':'<div class="ph-icon">'+carSilhouette()+'</div>')+'</div>'+
+    (imgs.length > 1 ? '<div class="fcd-thumbs">'+imgs.map(function(u,i){ return '<button class="fcd-thumb" data-i="'+i+'"><img src="'+u+'"></button>'; }).join("")+'</div>' : "")+
+    '<div class="fcd-name">'+esc(car.name)+'</div>'+
+    '<div class="fcd-details">'+
+      friendDetailRow("Brand", car.brand)+
+      friendDetailRow("Year", car.year)+
+      friendDetailRow("Exterior Color", car.extColor)+
+      friendDetailRow("Interior Color", car.intColor)+
+      friendDetailRow("Made In", car.madeIn)+
+      friendDetailRow("Packaging", packagingLine)+
+    '</div>';
+
+  document.getElementById("friendCarDetailBody").querySelectorAll(".fcd-thumb").forEach(function(btn){
+    btn.addEventListener("click", function(){ openPhotoViewer(imgs, +btn.getAttribute("data-i")); });
+  });
+  var mainPhoto = document.querySelector("#friendCarDetailBody .fcd-photo img");
+  if(mainPhoto) mainPhoto.addEventListener("click", function(){ openPhotoViewer(imgs, 0); });
+
+  document.getElementById("friendCarDetailView").classList.remove("hidden");
+}
+document.getElementById("friendCarDetailCloseBtn").addEventListener("click", function(){
+  document.getElementById("friendCarDetailView").classList.add("hidden");
+});
 document.getElementById("friendVaultCloseBtn").addEventListener("click", function(){
   document.getElementById("friendVaultView").classList.add("hidden");
 });
