@@ -938,6 +938,18 @@ img{-webkit-user-drag:none;}
     <div class="fv-body" id="friendCarDetailBody"></div>
   </div>
 
+  <!-- Transfer-to-friend picker -->
+  <div class="fullscreen-view hidden" id="transferPickerView">
+    <div class="fv-header">
+      <button class="icon-btn" id="transferPickerCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="fv-title">Transfer To</div>
+      <div style="width:36px;"></div>
+    </div>
+    <div class="fv-body" id="transferPickerBody"></div>
+  </div>
+
   <!-- Profile screen -->
   <div id="profileScreen" class="app-screen">
     <div class="topbar">
@@ -1199,8 +1211,8 @@ var usingSupabase = true;
 function sbc(){ return window.DVAuth.client; }
 function myUid(){ return window.DVAuth.profile.id; }
 
-function carPhotoPath(carId, slot){
-  return myUid() + "/" + carId + "/" + slot + ".jpg";
+function carPhotoPath(rootId, carId, slot){
+  return rootId + "/" + carId + "/" + slot + ".jpg";
 }
 function dataUrlToBlob(dataUrl){
   return fetch(dataUrl).then(function(r){ return r.blob(); });
@@ -1208,8 +1220,8 @@ function dataUrlToBlob(dataUrl){
 // value: null/undefined (no photo), a "data:" URL (new/changed photo to
 // upload), or an existing string (already-uploaded photo, unchanged).
 // Resolves to true if a photo should be recorded as present for this slot.
-function uploadCarPhotoIfNeeded(carId, slot, value){
-  var path = carPhotoPath(carId, slot);
+function uploadCarPhotoIfNeeded(rootId, carId, slot, value){
+  var path = carPhotoPath(rootId, carId, slot);
   if(value && typeof value === "string" && value.indexOf("data:") === 0){
     return dataUrlToBlob(value).then(function(blob){
       return sbc().storage.from("car-photos").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
@@ -1264,7 +1276,7 @@ function sbGetAllCars(){
       rows.forEach(function(r){
         PHOTO_SLOTS.forEach(function(slot){
           if(r.photos && r.photos[slot]){
-            pathMeta.push({ carId: r.id, slot: slot, path: r.owner_id + "/" + r.id + "/" + slot + ".jpg" });
+            pathMeta.push({ carId: r.id, slot: slot, path: carPhotoPath(r.photo_root_id, r.id, slot) });
           }
         });
       });
@@ -1283,7 +1295,8 @@ function sbGetAllCars(){
             photos: photos,
             createdAt: new Date(r.created_at).getTime(),
             order: new Date(r.created_at).getTime(),
-            ownerId: r.owner_id
+            ownerId: r.owner_id,
+            photoRootId: r.photo_root_id
           };
         });
       });
@@ -1293,21 +1306,28 @@ function sbGetAllCars(){
 function sbPutCar(car){
   var carId = car.id || uid();
   var draft = car.photos || {};
-  return Promise.all(PHOTO_SLOTS.map(function(slot){
-    return uploadCarPhotoIfNeeded(carId, slot, draft[slot]).then(function(present){ return { slot: slot, present: present }; });
-  })).then(function(results){
+  var baseRow = {
+    id: carId, owner_id: myUid(),
+    name: car.name, brand: car.brand || null, year: car.year || null,
+    ext_color: car.extColor || null, int_color: car.intColor || null, made_in: car.madeIn || null,
+    packaging_type: car.packagingType || null, pack_size: car.packSize || null,
+    favorite: !!car.favourite,
+    visibility: car.visibility === "friends" ? "friends" : "private"
+  };
+  // The row must exist (with the right owner) before photo uploads are
+  // attempted — storage permission for a car's photos is derived from the
+  // live cars.owner_id, not the uploader, so a brand-new car has nothing
+  // to check against until this upsert lands first.
+  return sbc().from("cars").upsert(baseRow, { onConflict: "id" }).then(function(res){
+    if(res.error) throw res.error;
+    var rootId = car.photoRootId || myUid();
+    return Promise.all(PHOTO_SLOTS.map(function(slot){
+      return uploadCarPhotoIfNeeded(rootId, carId, slot, draft[slot]).then(function(present){ return { slot: slot, present: present }; });
+    }));
+  }).then(function(results){
     var photosFlags = {};
     results.forEach(function(r){ if(r.present) photosFlags[r.slot] = true; });
-    var row = {
-      id: carId, owner_id: myUid(),
-      name: car.name, brand: car.brand || null, year: car.year || null,
-      ext_color: car.extColor || null, int_color: car.intColor || null, made_in: car.madeIn || null,
-      packaging_type: car.packagingType || null, pack_size: car.packSize || null,
-      favorite: !!car.favourite,
-      visibility: car.visibility === "friends" ? "friends" : "private",
-      photos: photosFlags
-    };
-    return sbc().from("cars").upsert(row, { onConflict: "id" });
+    return sbc().from("cars").update({ photos: photosFlags }).eq("id", carId);
   }).then(function(res){
     if(res.error) throw res.error;
     return sbc().from("car_categories").delete().eq("car_id", carId);
@@ -1334,10 +1354,10 @@ function sbClearStore(name){
     return sbc().from("categories").delete().eq("owner_id", myUid()).then(function(res){ if(res.error) throw res.error; });
   }
   if(name === "cars"){
-    return sbc().from("cars").select("id").eq("owner_id", myUid()).then(function(res){
+    return sbc().from("cars").select("id, photo_root_id").eq("owner_id", myUid()).then(function(res){
       if(res.error) throw res.error;
       var paths = [];
-      (res.data||[]).forEach(function(r){ PHOTO_SLOTS.forEach(function(slot){ paths.push(carPhotoPath(r.id, slot)); }); });
+      (res.data||[]).forEach(function(r){ PHOTO_SLOTS.forEach(function(slot){ paths.push(carPhotoPath(r.photo_root_id, r.id, slot)); }); });
       var removePhotos = paths.length ? sbc().storage.from("car-photos").remove(paths).catch(function(){}) : Promise.resolve();
       return removePhotos.then(function(){ return sbc().from("cars").delete().eq("owner_id", myUid()); });
     }).then(function(res){ if(res && res.error) throw res.error; });
@@ -2332,6 +2352,7 @@ function renderCarDetail(carId){
       cvField("Made In", car.madeIn)+
       (car.packagingType ? cvField("Packaging", car.packagingType === "Multipack" && car.packSize ? "Multipack ("+car.packSize+")" : car.packagingType) : "")+
     '</div>'+
+    '<button class="btn btn-secondary btn-block" id="cvTransferBtn" style="margin-bottom:8px;">Transfer to Friend</button>'+
     '<div class="cv-actions">'+
       '<button class="btn btn-secondary" id="cvEditBtn2">Edit</button>'+
       '<button class="btn btn-danger" id="cvDelBtn">Delete</button>'+
@@ -2356,6 +2377,7 @@ function renderCarDetail(carId){
     e.stopPropagation(); toggleFavourite(carId);
   });
   document.getElementById("cvEditBtn2").addEventListener("click", function(){ openEditView(carId); });
+  document.getElementById("cvTransferBtn").addEventListener("click", function(){ openTransferPicker(car); });
   document.getElementById("cvDelBtn").addEventListener("click", function(){
     confirmDialog("Delete this car?", "This car will be permanently removed from your collection.", "Delete", function(){
       closeCarDetail(); deleteCarFlow(carId);
@@ -2827,7 +2849,7 @@ function fetchFriendVaultCars(friendId){
       var pathMeta = [];
       rows.forEach(function(r){
         PHOTO_SLOTS.forEach(function(slot){
-          if(r.photos && r.photos[slot]) pathMeta.push({carId:r.id, slot:slot, path:friendId+"/"+r.id+"/"+slot+".jpg"});
+          if(r.photos && r.photos[slot]) pathMeta.push({carId:r.id, slot:slot, path:carPhotoPath(r.photo_root_id, r.id, slot)});
         });
       });
       return signedUrlsForPaths(pathMeta.map(function(m){return m.path;})).then(function(urlMap){
@@ -3153,6 +3175,65 @@ function openAdminUserDetail(userId){
 }
 document.getElementById("adminUserDetailCloseBtn").addEventListener("click", function(){
   document.getElementById("adminUserDetailView").classList.add("hidden");
+});
+
+/* ============================================================
+   CAR OWNERSHIP TRANSFER
+   ============================================================ */
+function transferCarOwnership(carId, newOwnerId){
+  return sbc().rpc("transfer_car_ownership", { p_car_id: carId, p_new_owner: newOwnerId })
+    .then(function(res){ if(res.error) throw res.error; });
+}
+
+function openTransferPicker(car){
+  var body = document.getElementById("transferPickerBody");
+  body.innerHTML = '<div class="friends-empty">Loading friends…</div>';
+  document.getElementById("transferPickerView").classList.remove("hidden");
+  fetchFriendsList().then(function(friends){
+    if(!friends.length){
+      body.innerHTML = '<div class="friends-empty">You need a friend to transfer a car to. Add one from the Friends tab first.</div>';
+      return;
+    }
+    body.innerHTML =
+      '<div class="friends-empty" style="text-align:left;padding:14px 2px;">Transferring <strong>'+esc(car.name)+'</strong> gives full ownership to whoever you pick — you will no longer have this car in your own Vault, and this cannot be undone.</div>' +
+      friends.map(function(p){
+        return friendPersonRow(p, '<button data-pick="'+p.id+'">Transfer</button>');
+      }).join("");
+    body.querySelectorAll("[data-pick]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var target = friends.find(function(f){ return f.id === btn.getAttribute("data-pick"); });
+        confirmDialog(
+          "Transfer to "+target.first_name+"?",
+          "This permanently gives "+target.first_name+" ownership of \""+car.name+"\". You will lose it from your own Vault. This cannot be undone.",
+          "Continue",
+          function(){
+            confirmDialog(
+              "Are you absolutely sure?",
+              "\""+car.name+"\" will belong to @"+target.username+" immediately and permanently.",
+              "Transfer Car",
+              function(){
+                transferCarOwnership(car.id, target.id).then(function(){
+                  showToast("Car transferred to "+target.first_name+".");
+                  document.getElementById("transferPickerView").classList.add("hidden");
+                  closeCarDetail();
+                  loadAll().then(renderCollection);
+                }).catch(function(err){
+                  showToast(err.message || "Could not transfer this car.");
+                });
+              },
+              true
+            );
+          },
+          true
+        );
+      });
+    });
+  }).catch(function(){
+    body.innerHTML = '<div class="friends-empty">Could not load your friends list.</div>';
+  });
+}
+document.getElementById("transferPickerCloseBtn").addEventListener("click", function(){
+  document.getElementById("transferPickerView").classList.add("hidden");
 });
 
 /* ============================================================
