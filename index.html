@@ -33,21 +33,75 @@
   --r-md:14px;
   --r-sm:10px;
 }
-/* Cream Soda theme — every role above swapped: cream becomes the
-   dominant surface/background color, blueberry becomes the accent. */
-:root[data-theme="cream"]{
-  --bg:#FFF0C9;
-  --bg-elev:#fce9b8;
-  --surface:#f7e1a6;
-  --surface-2:#f0d890;
-  --border:#dfc878;
-  --red:#243B8F;
-  --red-dim:#1a2c6b;
-  --red-soft:rgba(36,59,143,.14);
-  --on-red:#FFF6E0;
-  --text:#1a2550;
-  --text-dim:#3d4a80;
-  --text-faint:#6b78a8;
+:root[data-theme="lime-spark"]{
+  --bg:#B6FF2E;
+  --bg-elev:#abf02b;
+  --surface:#a2e329;
+  --surface-2:#97d426;
+  --border:#8ac223;
+  --red:#23262F;
+  --red-dim:#1e2028;
+  --red-soft:rgba(35,38,47,.16);
+  --on-red:#EFFFC7;
+  --text:#20261a;
+  --text-dim:#3d472f;
+  --text-faint:#68724f;
+}
+:root[data-theme="burnt-orange"]{
+  --bg:#FC6C26;
+  --bg-elev:#ed6624;
+  --surface:#e06022;
+  --surface-2:#d15a20;
+  --border:#c0521d;
+  --red:#FFF4D6;
+  --red-dim:#d9cfb6;
+  --red-soft:rgba(255,244,214,.28);
+  --on-red:#4a2a10;
+  --text:#3a1a06;
+  --text-dim:#5c3016;
+  --text-faint:#8a5a3a;
+}
+:root[data-theme="warm-lime"]{
+  --bg:#CFFF74;
+  --bg-elev:#c3f06d;
+  --surface:#b8e367;
+  --surface-2:#acd460;
+  --border:#9dc258;
+  --red:#2F3A1D;
+  --red-dim:#283119;
+  --red-soft:rgba(47,58,29,.16);
+  --on-red:#eaffc9;
+  --text:#2a3318;
+  --text-dim:#4b5636;
+  --text-faint:#767f5c;
+}
+:root[data-theme="cyber-grape"]{
+  --bg:#441987;
+  --bg-elev:#551fa9;
+  --surface:#6425c8;
+  --surface-2:#6D28D9;
+  --border:#9664e4;
+  --red:#D7FF00;
+  --red-dim:#b0d100;
+  --red-soft:rgba(215,255,0,.18);
+  --on-red:#241448;
+  --text:#f3eeff;
+  --text-dim:#cdbdf0;
+  --text-faint:#9884c2;
+}
+:root[data-theme="cyber-teal"]{
+  --bg:#021e24;
+  --bg-elev:#02262d;
+  --surface:#032d35;
+  --surface-2:#03313A;
+  --border:#4a6b71;
+  --red:#8FFFE0;
+  --red-dim:#75d1b8;
+  --red-soft:rgba(143,255,224,.16);
+  --on-red:#03313A;
+  --text:#eafffb;
+  --text-dim:#a9e8dd;
+  --text-faint:#5f9c93;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{height:100%;}
@@ -204,26 +258,36 @@ img{-webkit-user-drag:none;}
 }
 .visibility-toggle button.active{ background:var(--red); color:var(--on-red); border-color:var(--red); }
 
-/* ---------- Theme switch ---------- */
-.theme-switch-row{
+/* ---------- Theme picker ---------- */
+.theme-settings-row{
   display:flex; align-items:center; justify-content:space-between;
   padding:11px 12px; background:var(--surface); border:1px solid var(--border);
   border-radius:12px; margin-bottom:7px;
 }
-.theme-switch-labels{ display:flex; flex-direction:column; }
-.theme-switch-labels .lbl{ font-size:12.5px; font-weight:700; }
-.theme-switch-labels .sub{ font-size:10.5px; color:var(--text-faint); margin-top:1px; }
-.theme-switch{
-  width:50px; height:28px; border-radius:999px; position:relative; flex-shrink:0;
-  background:linear-gradient(90deg, #243B8F 0%, #243B8F 50%, #FFF0C9 50%, #FFF0C9 100%);
-  border:1px solid var(--border);
+.theme-settings-row .lbl{ font-size:12.5px; font-weight:700; }
+.theme-settings-row .sub{ font-size:10.5px; color:var(--text-faint); margin-top:1px; }
+.theme-current-dot{ width:20px; height:20px; border-radius:50%; border:1px solid rgba(0,0,0,.15); flex-shrink:0; }
+
+#themePickerBody{ padding-top:6px; }
+.theme-picker-intro{ font-size:12.5px; color:var(--text-faint); padding:0 2px 14px; }
+.theme-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding-bottom:24px; }
+.theme-tile{
+  border-radius:16px; overflow:hidden; border:2px solid var(--border);
+  background:var(--surface); text-align:left;
 }
-.theme-switch .knob{
-  position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%;
-  background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.4);
-  transition:transform .18s ease;
+.theme-tile.selected{ border-color:var(--red); }
+.theme-tile-preview{ padding:14px 12px 10px; }
+.theme-preview-card{
+  border-radius:10px; padding:8px; display:flex; flex-direction:column; gap:6px;
 }
-:root[data-theme="cream"] .theme-switch .knob{ transform:translateX(22px); }
+.theme-preview-photo{ border-radius:7px; height:34px; position:relative; }
+.theme-preview-dot{ position:absolute; top:5px; right:5px; width:10px; height:10px; border-radius:50%; }
+.theme-preview-line{ height:6px; border-radius:3px; width:70%; }
+.theme-preview-line.short{ width:40%; height:5px; }
+.theme-tile-name{
+  padding:9px 12px 11px; font-size:12px; font-weight:800;
+  background:var(--surface); color:var(--text);
+}
 
 #searchBar{
   display:flex; align-items:center; gap:6px;
@@ -733,6 +797,17 @@ img{-webkit-user-drag:none;}
 </head>
 <body>
 
+<script>
+(function(){
+  try{
+    var saved = localStorage.getItem("dv-theme");
+    if(saved && saved !== "blueberry"){
+      document.documentElement.setAttribute("data-theme", saved);
+    }
+  }catch(e){}
+})();
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <div id="authLoading">
@@ -938,6 +1013,18 @@ img{-webkit-user-drag:none;}
     <div class="fv-body" id="friendCarDetailBody"></div>
   </div>
 
+  <!-- Theme picker -->
+  <div class="fullscreen-view hidden" id="themePickerView">
+    <div class="fv-header">
+      <button class="icon-btn" id="themePickerCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+      </button>
+      <div class="fv-title">Choose a Theme</div>
+      <div style="width:36px;"></div>
+    </div>
+    <div class="fv-body" id="themePickerBody"></div>
+  </div>
+
   <!-- Profile screen -->
   <div id="profileScreen" class="app-screen">
     <div class="topbar">
@@ -1087,14 +1174,76 @@ img{-webkit-user-drag:none;}
    ============================================================ */
 var PHOTO_SLOTS = ["front","back","wheels","interior"];
 
-function setTheme(name){
-  if(name === "cream"){
-    document.documentElement.setAttribute("data-theme", "cream");
-  } else {
+var THEMES = {
+  "blueberry":    { name:"Blueberry",    bg:"#12204f", surface:"#1d3374", accent:"#FFF0C9", text:"#fff6e0", textFaint:"#8b9ad1" },
+  "lime-spark":   { name:"Lime Spark",   bg:"#B6FF2E", surface:"#a2e329", accent:"#23262F", text:"#20261a", textFaint:"#68724f" },
+  "burnt-orange": { name:"Burnt Orange", bg:"#FC6C26", surface:"#e06022", accent:"#FFF4D6", text:"#3a1a06", textFaint:"#8a5a3a" },
+  "warm-lime":    { name:"Warm Lime",    bg:"#CFFF74", surface:"#b8e367", accent:"#2F3A1D", text:"#2a3318", textFaint:"#767f5c" },
+  "cyber-grape":  { name:"Cyber Grape",  bg:"#441987", surface:"#6425c8", accent:"#D7FF00", text:"#f3eeff", textFaint:"#9884c2" },
+  "cyber-teal":   { name:"Cyber Teal",   bg:"#021e24", surface:"#032d35", accent:"#8FFFE0", text:"#eafffb", textFaint:"#5f9c93" }
+};
+
+function getCurrentThemeKey(){
+  var attr = document.documentElement.getAttribute("data-theme");
+  return (attr && THEMES[attr]) ? attr : "blueberry";
+}
+
+function setTheme(key){
+  if(!THEMES[key]) key = "blueberry";
+  if(key === "blueberry"){
     document.documentElement.removeAttribute("data-theme");
-    name = "blueberry";
+  } else {
+    document.documentElement.setAttribute("data-theme", key);
   }
-  try{ localStorage.setItem("dv-theme", name); }catch(e){}
+  try{ localStorage.setItem("dv-theme", key); }catch(e){}
+}
+
+function themeTileHTML(key, selected){
+  var t = THEMES[key];
+  return '<button type="button" class="theme-tile'+(selected?" selected":"")+'" data-theme-key="'+key+'">'+
+    '<div class="theme-tile-preview" style="background:'+t.bg+';">'+
+      '<div class="theme-preview-card" style="background:'+t.surface+';">'+
+        '<div class="theme-preview-photo" style="background:'+t.bg+';">'+
+          '<div class="theme-preview-dot" style="background:'+t.accent+';"></div>'+
+        '</div>'+
+        '<div class="theme-preview-line" style="background:'+t.text+';"></div>'+
+        '<div class="theme-preview-line short" style="background:'+t.textFaint+';"></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="theme-tile-name">'+t.name+'</div>'+
+  '</button>';
+}
+
+function openThemePicker(){
+  var body = document.getElementById("themePickerBody");
+  var current = getCurrentThemeKey();
+  body.innerHTML =
+    '<div class="theme-picker-intro">Pick a look for Diecast Vault. You can always change this later in Settings.</div>'+
+    '<div class="theme-grid">'+
+      Object.keys(THEMES).map(function(k){ return themeTileHTML(k, k===current); }).join("")+
+    '</div>';
+  body.querySelectorAll(".theme-tile").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-theme-key");
+      setTheme(key);
+      body.querySelectorAll(".theme-tile").forEach(function(b){ b.classList.toggle("selected", b===btn); });
+      try{ localStorage.setItem("dv-seen-theme-picker", "1"); }catch(e){}
+      if(document.getElementById("settingsView") && !document.getElementById("settingsView").classList.contains("hidden")){
+        renderSettings();
+      }
+    });
+  });
+  document.getElementById("themePickerView").classList.remove("hidden");
+}
+document.getElementById("themePickerCloseBtn").addEventListener("click", function(){
+  document.getElementById("themePickerView").classList.add("hidden");
+  try{ localStorage.setItem("dv-seen-theme-picker", "1"); }catch(e){}
+});
+
+function maybeShowThemePickerOnFirstLogin(){
+  var seen = false;
+  try{ seen = localStorage.getItem("dv-seen-theme-picker") === "1"; }catch(e){}
+  if(!seen) openThemePicker();
 }
 var PHOTO_LABELS = {front:"FRONT", back:"BACK", wheels:"WHEELS", interior:"INTERIOR"};
 var SEARCH_FIELDS = [
@@ -2476,12 +2625,12 @@ function renderSettings(){
         '<div class="settings-row"><div><div class="lbl">Delete Account</div><div class="sub">Permanently erase your vault</div></div><button class="danger" id="stDeleteAccount">Delete</button></div>'+
       '</div>';
   }
-  var isCream = document.documentElement.getAttribute("data-theme") === "cream";
+  var curTheme = getCurrentThemeKey();
   var themeHtml =
     '<div class="settings-section">'+
-      '<div class="theme-switch-row" id="themeSwitchRow">'+
-        '<div class="theme-switch-labels"><div class="lbl">Theme</div><div class="sub" id="themeSubLabel">'+(isCream?"Cream Soda":"Blueberry")+'</div></div>'+
-        '<div class="theme-switch" id="themeSwitchToggle"><div class="knob"></div></div>'+
+      '<div class="theme-settings-row" id="themeSettingsRow">'+
+        '<div><div class="lbl">Theme</div><div class="sub">'+THEMES[curTheme].name+'</div></div>'+
+        '<div class="theme-current-dot" style="background:'+THEMES[curTheme].bg+';"></div>'+
       '</div>'+
     '</div>';
 
@@ -2494,10 +2643,8 @@ function renderSettings(){
     '<div class="settings-section" id="storageInfo"></div>'+
     '<div class="app-info">Diecast Vault<br>Version '+APP_VERSION+'<br>'+state.cars.length+' cars stored locally</div>';
 
-  document.getElementById("themeSwitchToggle").addEventListener("click", function(){
-    var current = document.documentElement.getAttribute("data-theme") === "cream" ? "cream" : "blueberry";
-    setTheme(current === "cream" ? "blueberry" : "cream");
-    document.getElementById("themeSubLabel").textContent = (current === "cream") ? "Blueberry" : "Cream Soda";
+  document.getElementById("themeSettingsRow").addEventListener("click", function(){
+    openThemePicker();
   });
 
   if(document.getElementById("stLogout")){
@@ -3165,6 +3312,7 @@ function initApp(){
       renderCollection();
       refreshFriendsBadge();
       maybeShowAdminTab();
+      maybeShowThemePickerOnFirstLogin();
     })
     .catch(function(err){
       console.error("App init failed", err);
