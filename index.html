@@ -19,7 +19,7 @@
   --red:#FFF0C9;
   --red-dim:#e6d9ae;
   --red-soft:rgba(255,240,201,.16);
-  --on-red:#12204f;
+  --on-red:#000000;
   --danger:#ff3b30;
   --danger-soft:rgba(255,59,48,.14);
   --text:#fff6e0;
@@ -42,7 +42,7 @@
   --red:#23262F;
   --red-dim:#1e2028;
   --red-soft:rgba(35,38,47,.16);
-  --on-red:#EFFFC7;
+  --on-red:#ffffff;
   --text:#20261a;
   --text-dim:#3d472f;
   --text-faint:#68724f;
@@ -56,24 +56,24 @@
   --red:#FFF4D6;
   --red-dim:#d9cfb6;
   --red-soft:rgba(255,244,214,.28);
-  --on-red:#4a2a10;
+  --on-red:#000000;
   --text:#3a1a06;
   --text-dim:#5c3016;
   --text-faint:#8a5a3a;
 }
 :root[data-theme="warm-lime"]{
-  --bg:#CFFF74;
-  --bg-elev:#c3f06d;
-  --surface:#b8e367;
-  --surface-2:#acd460;
-  --border:#9dc258;
-  --red:#2F3A1D;
-  --red-dim:#283119;
-  --red-soft:rgba(47,58,29,.16);
-  --on-red:#eaffc9;
-  --text:#2a3318;
-  --text-dim:#4b5636;
-  --text-faint:#767f5c;
+  --bg:#1d2412;
+  --bg-elev:#252d17;
+  --surface:#2b351b;
+  --surface-2:#2F3A1D;
+  --border:#69715c;
+  --red:#CFFF74;
+  --red-dim:#b0d963;
+  --red-soft:rgba(207,255,116,.18);
+  --on-red:#000000;
+  --text:#eaffc9;
+  --text-dim:#b8cf98;
+  --text-faint:#8b9a72;
 }
 :root[data-theme="cyber-grape"]{
   --bg:#441987;
@@ -84,7 +84,7 @@
   --red:#D7FF00;
   --red-dim:#b0d100;
   --red-soft:rgba(215,255,0,.18);
-  --on-red:#241448;
+  --on-red:#000000;
   --text:#f3eeff;
   --text-dim:#cdbdf0;
   --text-faint:#9884c2;
@@ -98,7 +98,7 @@
   --red:#8FFFE0;
   --red-dim:#75d1b8;
   --red-soft:rgba(143,255,224,.16);
-  --on-red:#03313A;
+  --on-red:#000000;
   --text:#eafffb;
   --text-dim:#a9e8dd;
   --text-faint:#5f9c93;
@@ -338,7 +338,7 @@ img{-webkit-user-drag:none;}
 }
 .car-card .photo{
   flex:1; position:relative; overflow:hidden;
-  background:linear-gradient(160deg,#1c1c1f,#101012);
+  background:linear-gradient(160deg, var(--surface-2), var(--bg-elev));
 }
 .car-card .photo img{ width:100%; height:100%; object-fit:cover; display:block;}
 .car-card .photo .ph-icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.28;}
@@ -399,7 +399,7 @@ img{-webkit-user-drag:none;}
 #sidebar{
   position:absolute; top:0; left:0; bottom:0;
   width:78%; max-width:250px;
-  background:rgba(19,19,21,.97);
+  background:var(--bg-elev);
   border-right:1px solid var(--border);
   transform:translateX(-100%);
   transition:transform .26s cubic-bezier(.32,.72,0,1);
@@ -1174,11 +1174,20 @@ img{-webkit-user-drag:none;}
    ============================================================ */
 var PHOTO_SLOTS = ["front","back","wheels","interior"];
 
+// All .fullscreen-view overlays share one base z-index, so which one visibly
+// stacks on top otherwise depends on DOM order rather than open order — this
+// bumps whichever one is opened above every other currently-open overlay.
+var topOverlayZ = 30;
+function bringToFront(el){
+  topOverlayZ += 1;
+  el.style.zIndex = topOverlayZ;
+}
+
 var THEMES = {
   "blueberry":    { name:"Blueberry",    bg:"#12204f", surface:"#1d3374", accent:"#FFF0C9", text:"#fff6e0", textFaint:"#8b9ad1" },
   "lime-spark":   { name:"Lime Spark",   bg:"#B6FF2E", surface:"#a2e329", accent:"#23262F", text:"#20261a", textFaint:"#68724f" },
   "burnt-orange": { name:"Burnt Orange", bg:"#FC6C26", surface:"#e06022", accent:"#FFF4D6", text:"#3a1a06", textFaint:"#8a5a3a" },
-  "warm-lime":    { name:"Warm Lime",    bg:"#CFFF74", surface:"#b8e367", accent:"#2F3A1D", text:"#2a3318", textFaint:"#767f5c" },
+  "warm-lime":    { name:"Warm Lime",    bg:"#1d2412", surface:"#2b351b", accent:"#CFFF74", text:"#eaffc9", textFaint:"#8b9a72" },
   "cyber-grape":  { name:"Cyber Grape",  bg:"#441987", surface:"#6425c8", accent:"#D7FF00", text:"#f3eeff", textFaint:"#9884c2" },
   "cyber-teal":   { name:"Cyber Teal",   bg:"#021e24", surface:"#032d35", accent:"#8FFFE0", text:"#eafffb", textFaint:"#5f9c93" }
 };
@@ -1196,6 +1205,11 @@ function setTheme(key){
     document.documentElement.setAttribute("data-theme", key);
   }
   try{ localStorage.setItem("dv-theme", key); }catch(e){}
+  // Best-effort sync so the theme follows the account across devices —
+  // localStorage above is just for an instant, flash-free apply on this device.
+  if(window.DVAuth && window.DVAuth.profile && window.DVAuth.client){
+    window.DVAuth.client.from("profiles").update({ theme: key }).eq("id", window.DVAuth.profile.id).then(function(){});
+  }
 }
 
 function themeTileHTML(key, selected){
@@ -1214,11 +1228,13 @@ function themeTileHTML(key, selected){
   '</button>';
 }
 
-function openThemePicker(){
+// isFirstRun: true only right after account creation (shows the intro
+// sentence); reopening from Settings later omits it since it'd be redundant.
+function openThemePicker(isFirstRun){
   var body = document.getElementById("themePickerBody");
   var current = getCurrentThemeKey();
   body.innerHTML =
-    '<div class="theme-picker-intro">Pick a look for Diecast Vault. You can always change this later in Settings.</div>'+
+    (isFirstRun ? '<div class="theme-picker-intro">Pick a look for Diecast Vault. You can always change this later in Settings.</div>' : '')+
     '<div class="theme-grid">'+
       Object.keys(THEMES).map(function(k){ return themeTileHTML(k, k===current); }).join("")+
     '</div>';
@@ -1227,24 +1243,23 @@ function openThemePicker(){
       var key = btn.getAttribute("data-theme-key");
       setTheme(key);
       body.querySelectorAll(".theme-tile").forEach(function(b){ b.classList.toggle("selected", b===btn); });
-      try{ localStorage.setItem("dv-seen-theme-picker", "1"); }catch(e){}
       if(document.getElementById("settingsView") && !document.getElementById("settingsView").classList.contains("hidden")){
         renderSettings();
       }
     });
   });
-  document.getElementById("themePickerView").classList.remove("hidden");
+  var _tpv=document.getElementById("themePickerView"); bringToFront(_tpv); _tpv.classList.remove("hidden");
 }
 document.getElementById("themePickerCloseBtn").addEventListener("click", function(){
   document.getElementById("themePickerView").classList.add("hidden");
-  try{ localStorage.setItem("dv-seen-theme-picker", "1"); }catch(e){}
 });
 
-function maybeShowThemePickerOnFirstLogin(){
-  var seen = false;
-  try{ seen = localStorage.getItem("dv-seen-theme-picker") === "1"; }catch(e){}
-  if(!seen) openThemePicker();
-}
+window.DVApp = window.DVApp || {};
+window.DVApp.openThemePicker = openThemePicker;
+window.DVApp.applyStoredTheme = function(themeKey){
+  setTheme(themeKey || "blueberry");
+};
+
 var PHOTO_LABELS = {front:"FRONT", back:"BACK", wheels:"WHEELS", interior:"INTERIOR"};
 var SEARCH_FIELDS = [
   {key:"name", label:"Name"},
@@ -1977,7 +1992,7 @@ function openEditView(carId){
   state.draftCategoryIds = existingIds.length ? existingIds.slice(0,4) : (state.categories[0] ? [state.categories[0].id] : []);
   document.getElementById("editTitle").textContent = car ? "Edit Car" : "Add Car";
   renderEditBody(car);
-  document.getElementById("editView").classList.remove("hidden");
+  var _ev=document.getElementById("editView"); bringToFront(_ev); _ev.classList.remove("hidden");
 }
 function closeEditView(){
   document.getElementById("editView").classList.add("hidden");
@@ -2429,7 +2444,7 @@ function openCarDetail(carId){
   state.carViewCarId = carId;
   state.carViewIndex = 0;
   renderCarDetail(carId);
-  document.getElementById("carView").classList.remove("hidden");
+  var _cv=document.getElementById("carView"); bringToFront(_cv); _cv.classList.remove("hidden");
 }
 function closeCarDetail(){
   document.getElementById("carView").classList.add("hidden");
@@ -2609,7 +2624,7 @@ function showToast(msg){
 /* ============================================================
    SETTINGS: EXPORT / IMPORT / RESET
    ============================================================ */
-function openSettings(){ renderSettings(); document.getElementById("settingsView").classList.remove("hidden"); }
+function openSettings(){ renderSettings(); var _sv=document.getElementById("settingsView"); bringToFront(_sv); _sv.classList.remove("hidden"); }
 function closeSettings(){ document.getElementById("settingsView").classList.add("hidden"); }
 document.getElementById("settingsCloseBtn").addEventListener("click", closeSettings);
 
@@ -2996,7 +3011,7 @@ function openFriendVault(profile){
   friendVaultState.profile = profile;
   document.getElementById("friendVaultTitle").textContent = profile.first_name + "'s Vault";
   document.getElementById("friendVaultBody").innerHTML = '<div class="friends-empty">Loading…</div>';
-  document.getElementById("friendVaultView").classList.remove("hidden");
+  var _fvv=document.getElementById("friendVaultView"); bringToFront(_fvv); _fvv.classList.remove("hidden");
   fetchFriendVaultCars(profile.id).then(function(cars){
     friendVaultState.cars = cars;
     renderFriendVault();
@@ -3059,7 +3074,7 @@ function openFriendCarDetail(car){
   var mainPhoto = document.querySelector("#friendCarDetailBody .fcd-photo img");
   if(mainPhoto) mainPhoto.addEventListener("click", function(){ openPhotoViewer(imgs, 0); });
 
-  document.getElementById("friendCarDetailView").classList.remove("hidden");
+  var _fcv=document.getElementById("friendCarDetailView"); bringToFront(_fcv); _fcv.classList.remove("hidden");
 }
 document.getElementById("friendCarDetailCloseBtn").addEventListener("click", function(){
   document.getElementById("friendCarDetailView").classList.add("hidden");
@@ -3244,7 +3259,7 @@ document.getElementById("adminSearchInput").addEventListener("input", function()
 function openAdminUserDetail(userId){
   var body = document.getElementById("adminUserDetailBody");
   body.innerHTML = '<div class="friends-empty">Loading…</div>';
-  document.getElementById("adminUserDetailView").classList.remove("hidden");
+  var _audv=document.getElementById("adminUserDetailView"); bringToFront(_audv); _audv.classList.remove("hidden");
   fetchAdminUserDetail(userId).then(function(u){
     if(!u){ body.innerHTML = '<div class="friends-empty">Could not load this account.</div>'; return; }
     var memberSince = new Date(u.created_at).toLocaleDateString(undefined,{month:"long",year:"numeric"});
@@ -3312,7 +3327,6 @@ function initApp(){
       renderCollection();
       refreshFriendsBadge();
       maybeShowAdminTab();
-      maybeShowThemePickerOnFirstLogin();
     })
     .catch(function(err){
       console.error("App init failed", err);
@@ -3550,13 +3564,17 @@ function finishSignupThenEnter(uid){
     var path = uid + "/avatar-" + Date.now() + "." + (pendingAvatarFile.type.split("/")[1] || "jpg");
     return sb.storage.from("avatars").upload(path, pendingAvatarFile, { upsert: true, contentType: pendingAvatarFile.type })
       .then(function(){ return sb.from("profiles").update({ avatar_path: path }).eq("id", uid); })
-      .then(function(){ return afterAuthed(uid); });
+      .then(function(){ return afterAuthed(uid, true); });
   }
-  return afterAuthed(uid);
+  return afterAuthed(uid, true);
 }
 
-/* ---------- after successful sign-in/sign-up ---------- */
-function afterAuthed(uid){
+/* ---------- after successful sign-in/sign-up ----------
+   isSignup is only true right after account creation — that's the one
+   and only time the theme picker should appear automatically. Logging
+   into an existing account, on this device or a new one, never shows it;
+   the theme itself still follows the account via profiles.theme either way. */
+function afterAuthed(uid, isSignup){
   return sb.from("profiles").select("*").eq("id", uid).single().then(function(res){
     if(res.error || !res.data){ throw new Error("Could not load your profile."); }
     if(res.data.status === "suspended"){
@@ -3567,7 +3585,9 @@ function afterAuthed(uid){
     window.DVAuth.profile = res.data;
     document.getElementById("authView").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
+    if(window.DVApp && window.DVApp.applyStoredTheme) window.DVApp.applyStoredTheme(res.data.theme);
     if(window.DVApp && window.DVApp.start) window.DVApp.start();
+    if(isSignup && window.DVApp && window.DVApp.openThemePicker) window.DVApp.openThemePicker(true);
   });
 }
 
@@ -3611,4 +3631,4 @@ sb.auth.getSession().then(function(res){
 })();
 </script>
 </body>
-</html>
+  </html>
