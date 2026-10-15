@@ -1,0 +1,4162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>Diecast Vault</title>
+<meta name="theme-color" content="#0a0a0b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --bg:#12204f;
+  --bg-elev:#182a63;
+  --surface:#1d3374;
+  --surface-2:#24408f;
+  --border:#2f4a9c;
+  --red:#FFF0C9;
+  --red-dim:#e6d9ae;
+  --red-soft:rgba(255,240,201,.16);
+  --on-red:#000000;
+  --danger:#ff3b30;
+  --danger-soft:rgba(255,59,48,.14);
+  --text:#fff6e0;
+  --text-dim:#c9d3f0;
+  --text-faint:#8b9ad1;
+  --safe-t:max(14px, env(safe-area-inset-top));
+  --safe-b:max(16px, env(safe-area-inset-bottom));
+  --safe-l:max(14px, env(safe-area-inset-left));
+  --safe-r:max(14px, env(safe-area-inset-right));
+  --r-lg:20px;
+  --r-md:14px;
+  --r-sm:10px;
+  --sidebar-bg:var(--bg-elev);
+  --sidebar-border:var(--border);
+  --sidebar-text:var(--text);
+  --sidebar-text-faint:var(--text-faint);
+  --sidebar-accent:var(--red);
+  --sidebar-press:var(--surface-2);
+  --sidebar-active-bg:var(--red-soft);
+  --sidebar-btn-bg:var(--surface);
+  --sidebar-btn-border:var(--border);
+  --sidebar-heart:#fff;
+}
+:root[data-theme="lime-spark"]{
+  --bg:#B6FF2E;
+  --bg-elev:#abf02b;
+  --surface:#a2e329;
+  --surface-2:#97d426;
+  --border:#8ac223;
+  --red:#23262F;
+  --red-dim:#1e2028;
+  --red-soft:rgba(35,38,47,.16);
+  --on-red:#ffffff;
+  --text:#20261a;
+  --text-dim:#3d472f;
+  --text-faint:#68724f;
+  --sidebar-bg:#23262F;
+  --sidebar-border:#363b46;
+  --sidebar-text:#ffffff;
+  --sidebar-text-faint:#9aa0ab;
+  --sidebar-accent:#B6FF2E;
+  --sidebar-press:#2d313c;
+  --sidebar-active-bg:rgba(182,255,46,.18);
+  --sidebar-btn-bg:#2d313c;
+  --sidebar-btn-border:#363b46;
+  --sidebar-heart:#fff;
+}
+:root[data-theme="burnt-orange"]{
+  --bg:#FC6C26;
+  --bg-elev:#ed6624;
+  --surface:#e06022;
+  --surface-2:#d15a20;
+  --border:#c0521d;
+  --red:#FFF4D6;
+  --red-dim:#d9cfb6;
+  --red-soft:rgba(255,244,214,.28);
+  --on-red:#000000;
+  --text:#3a1a06;
+  --text-dim:#5c3016;
+  --text-faint:#8a5a3a;
+  --sidebar-bg:#FFF4D6;
+  --sidebar-border:#e8dcb8;
+  --sidebar-accent:#FC6C26;
+  --sidebar-press:#f0e4c0;
+  --sidebar-active-bg:rgba(252,108,38,.14);
+  --sidebar-btn-bg:#f5ecd0;
+  --sidebar-btn-border:#e8dcb8;
+  --sidebar-heart:#3a1a06;
+}
+:root[data-theme="warm-lime"]{
+  --bg:#1d2412;
+  --bg-elev:#252d17;
+  --surface:#2b351b;
+  --surface-2:#2F3A1D;
+  --border:#69715c;
+  --red:#CFFF74;
+  --red-dim:#b0d963;
+  --red-soft:rgba(207,255,116,.18);
+  --on-red:#000000;
+  --text:#eaffc9;
+  --text-dim:#b8cf98;
+  --text-faint:#8b9a72;
+}
+:root[data-theme="cyber-grape"]{
+  --bg:#441987;
+  --bg-elev:#551fa9;
+  --surface:#6425c8;
+  --surface-2:#6D28D9;
+  --border:#9664e4;
+  --red:#D7FF00;
+  --red-dim:#b0d100;
+  --red-soft:rgba(215,255,0,.18);
+  --on-red:#000000;
+  --text:#f3eeff;
+  --text-dim:#cdbdf0;
+  --text-faint:#9884c2;
+}
+:root[data-theme="cyber-teal"]{
+  --bg:#021e24;
+  --bg-elev:#02262d;
+  --surface:#032d35;
+  --surface-2:#03313A;
+  --border:#4a6b71;
+  --red:#8FFFE0;
+  --red-dim:#75d1b8;
+  --red-soft:rgba(143,255,224,.16);
+  --on-red:#000000;
+  --text:#eafffb;
+  --text-dim:#a9e8dd;
+  --text-faint:#5f9c93;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  overflow:hidden;
+  user-select:none;
+  -webkit-user-select:none;
+}
+button{font-family:inherit; color:inherit; background:none; border:none; cursor:pointer;}
+input,textarea,select{font-family:inherit; color:inherit;}
+img{-webkit-user-drag:none;}
+.hidden{display:none !important;}
+
+/* ---------- App shell ---------- */
+#app{
+  position:fixed; inset:0;
+  display:flex; flex-direction:column;
+  background:var(--bg);
+}
+.app-screen{ display:none; flex-direction:column; flex:1; min-height:0; }
+.app-screen.active{ display:flex; }
+.topbar{
+  display:flex; align-items:center; gap:8px;
+  padding:var(--safe-t) var(--safe-r) 8px var(--safe-l);
+  flex-shrink:0;
+}
+.icon-btn{
+  width:36px; height:36px; min-width:36px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--surface);
+  border:1px solid var(--border);
+}
+.icon-btn:active{background:var(--surface-2);}
+.icon-btn svg{width:17px; height:17px;}
+.topbar-title{
+  flex:1; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  min-width:0;
+}
+.topbar-title .name{
+  font-size:13px; font-weight:600; letter-spacing:.2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
+}
+.topbar-title .count{
+  font-size:10.5px; color:var(--text-faint); font-weight:600; letter-spacing:.6px;
+}
+.fab-add{
+  position:fixed;
+  right:calc(var(--safe-r) + 4px);
+  bottom:calc(var(--safe-b) + 4px);
+  width:48px; height:48px;
+  border-radius:50%;
+  background:var(--red);
+  color:var(--on-red);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 18px var(--red-soft), 0 2px 6px rgba(0,0,0,.35);
+  z-index:20;
+  border:1px solid rgba(255,255,255,.15);
+}
+.fab-add svg{ width:24px; height:24px; display:block; }
+.fab-add:active{ transform:scale(.94); }
+.fab-add{ bottom:calc(var(--safe-b) + 66px) !important; }
+
+#bottomNav{
+  display:flex; flex-shrink:0;
+  background:var(--surface); border-top:1px solid var(--border);
+  padding:7px var(--safe-r) calc(var(--safe-b) + 4px) var(--safe-l);
+}
+.nav-item{
+  flex:1; min-width:0; white-space:nowrap; display:flex; flex-direction:column; align-items:center; gap:2px;
+  color:var(--text-faint); font-size:10px; font-weight:700; letter-spacing:.2px; position:relative;
+}
+.nav-item svg{ width:22px; height:22px; }
+.nav-item.active{ color:var(--red); }
+.nav-badge{
+  position:absolute; top:-1px; right:26%; width:8px; height:8px; border-radius:50%;
+  background:var(--danger); border:1.5px solid var(--surface);
+}
+
+.friends-search-row{ display:flex; gap:8px; padding:12px var(--safe-r) 4px var(--safe-l); }
+.friends-search-row input{
+  flex:1; background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; color:var(--text); font-size:13px;
+}
+#friendsScroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:20px; }
+.friends-section-title{
+  padding:16px var(--safe-r) 6px var(--safe-l); font-size:11px; font-weight:800;
+  letter-spacing:.5px; color:var(--text-faint); text-transform:uppercase;
+}
+.friend-card, .request-card, .search-result-card{
+  display:flex; align-items:center; gap:11px;
+  margin:0 var(--safe-r) 8px var(--safe-l);
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:10px 12px;
+}
+.friend-avatar{
+  width:44px; height:44px; border-radius:50%; flex-shrink:0; overflow:hidden;
+  background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--text-faint);
+}
+.friend-avatar img{ width:100%; height:100%; object-fit:cover; }
+.friend-avatar svg{ width:100%; height:100%; padding:9px; }
+.friend-info{ flex:1; min-width:0; }
+.friend-name{ font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.friend-sub{ font-size:11.5px; color:var(--text-faint); }
+.friend-actions{ display:flex; gap:6px; flex-shrink:0; }
+.friend-actions button{
+  padding:7px 12px; border-radius:999px; font-size:11.5px; font-weight:700;
+  background:var(--red); color:var(--on-red);
+}
+.friend-actions button.secondary{ background:var(--surface-2); color:var(--text); border:1px solid var(--border); }
+.friends-empty{ text-align:center; padding:30px 20px; color:var(--text-faint); font-size:12.5px; }
+
+#profileScroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:18px var(--safe-r) 30px var(--safe-l); }
+.profile-header{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:14px 0 22px; }
+.profile-avatar-wrap{ position:relative; width:84px; height:84px; }
+.profile-avatar-lg{
+  width:100%; height:100%; border-radius:50%; overflow:hidden;
+  background:var(--surface); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; color:var(--text-faint);
+}
+.avatar-edit-badge{
+  position:absolute; right:-2px; bottom:-2px; width:26px; height:26px; border-radius:50%;
+  background:var(--red); color:var(--on-red); border:2px solid var(--bg);
+  display:flex; align-items:center; justify-content:center;
+}
+.avatar-edit-badge svg{ width:13px; height:13px; }
+.profile-avatar-lg img{ width:100%; height:100%; object-fit:cover; }
+.profile-avatar-lg svg{ width:100%; height:100%; padding:18px; }
+.profile-name{ font-size:17px; font-weight:800; }
+.profile-username{ font-size:12.5px; color:var(--text-faint); }
+.profile-stats{ display:flex; gap:10px; width:100%; }
+.profile-stat{
+  flex:1; background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:12px; text-align:center;
+}
+.profile-stat .num{ font-size:19px; font-weight:800; }
+.profile-stat .lbl{ font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+.profile-cat-row{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:11px 12px; background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; margin-bottom:7px; font-size:12.5px;
+}
+.profile-cat-row .n{ color:var(--text-faint); font-weight:700; }
+
+.visibility-toggle{ display:flex; gap:8px; }
+.visibility-toggle button{
+  flex:1; padding:10px; border-radius:10px; font-size:12.5px; font-weight:700;
+  background:var(--surface); border:1px solid var(--border); color:var(--text-faint);
+}
+.visibility-toggle button.active{ background:var(--red); color:var(--on-red); border-color:var(--red); }
+
+/* ---------- Theme picker ---------- */
+.theme-settings-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:11px 12px; background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; margin-bottom:7px;
+}
+.theme-settings-row .lbl{ font-size:12.5px; font-weight:700; }
+.theme-settings-row .sub{ font-size:10.5px; color:var(--text-faint); margin-top:1px; }
+.theme-current-dot{ width:20px; height:20px; border-radius:50%; border:1px solid rgba(0,0,0,.15); flex-shrink:0; }
+
+#themePickerBody{ padding-top:6px; }
+.theme-picker-intro{ font-size:12.5px; color:var(--text-faint); padding:0 2px 14px; }
+.theme-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding-bottom:24px; }
+.theme-tile{
+  border-radius:16px; overflow:hidden; border:2px solid var(--border);
+  background:var(--surface); text-align:left;
+}
+.theme-tile.selected{ border-color:var(--red); }
+.theme-tile-preview{ padding:14px 12px 10px; }
+.theme-preview-card{
+  border-radius:10px; padding:8px; display:flex; flex-direction:column; gap:6px;
+}
+.theme-preview-photo{ border-radius:7px; height:34px; position:relative; }
+.theme-preview-dot{ position:absolute; top:5px; right:5px; width:10px; height:10px; border-radius:50%; }
+.theme-preview-line{ height:6px; border-radius:3px; width:70%; }
+.theme-preview-line.short{ width:40%; height:5px; }
+.theme-tile-name{
+  padding:9px 12px 11px; font-size:12px; font-weight:800;
+  background:var(--surface); color:var(--text);
+}
+
+#searchBar{
+  display:flex; align-items:center; gap:6px;
+  padding:0 var(--safe-r) 8px var(--safe-l);
+  flex-shrink:0;
+}
+#searchFieldBtn{
+  font-size:10.5px; font-weight:700; color:var(--text-dim);
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:999px; padding:6px 10px; white-space:nowrap;
+  display:flex; align-items:center; gap:4px;
+}
+#searchFieldBtn svg{width:9px;height:9px;}
+#searchInputWrap{
+  flex:1; display:flex; align-items:center;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:999px; padding:0 10px; height:32px;
+}
+#searchInput{
+  flex:1; background:none; border:none; outline:none; color:var(--text);
+  font-size:13px; min-width:0;
+}
+#searchInput::placeholder{color:var(--text-faint);}
+#searchClear{ color:var(--text-faint); font-size:15px; line-height:1; padding:2px;}
+
+#collectionScroll{
+  position:relative;
+  flex:1; overflow-y:auto; overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:2px var(--safe-r) calc(var(--safe-b) + 8px) var(--safe-l);
+}
+#collection, .collection-grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:9px;
+}
+@media (min-width:420px){ #collection{grid-template-columns:repeat(3,1fr);} .collection-grid{grid-template-columns:repeat(3,1fr);} }
+@media (min-width:700px){ #collection{grid-template-columns:repeat(4,1fr);} .collection-grid{grid-template-columns:repeat(4,1fr);} }
+
+.car-card{
+  position:relative;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  overflow:hidden;
+  aspect-ratio:3/4.3;
+  display:flex; flex-direction:column;
+}
+.car-card .photo{
+  flex:1; position:relative; overflow:hidden;
+  background:linear-gradient(160deg, var(--surface-2), var(--bg-elev));
+}
+.car-card .photo img{ width:100%; height:100%; object-fit:cover; display:block;}
+.car-card .photo .ph-icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.28;}
+.car-card .photo .ph-icon svg{ width:34%; height:34%; }
+.car-card .info{
+  padding:7px 8px 8px;
+  display:flex; flex-direction:column; gap:2px;
+}
+.car-card .cname{
+  font-size:11.5px; font-weight:700; line-height:1.2;
+  overflow:hidden; text-overflow:ellipsis; display:-webkit-box;
+  -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+.car-card .cyear{ font-size:10px; color:var(--text-faint); font-weight:600;}
+.car-card .ctags{
+  position:absolute; top:6px; left:6px; right:26px;
+  display:flex; flex-direction:column; align-items:flex-start; gap:3px;
+}
+.car-card .ctag{
+  display:flex; align-items:center; gap:4px;
+  background:rgba(10,10,11,.72);
+  backdrop-filter:blur(6px);
+  border-radius:999px; padding:3px 7px 3px 5px;
+  font-size:8px; font-weight:800; letter-spacing:.4px; text-transform:uppercase;
+  color:#fff;
+  max-width:100%;
+}
+.car-card .ctag .dot{ width:6px; height:6px; border-radius:50%; flex-shrink:0;}
+.car-card .ctag span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.car-card .ctag.ctag-more{ padding:3px 7px; color:var(--text-dim);}
+.car-card .heart{
+  position:absolute; right:6px; bottom:6px;
+  width:22px; height:22px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(10,10,11,.72); backdrop-filter:blur(6px);
+  border-radius:50%;
+}
+.car-card .heart svg{ width:11px; height:11px; }
+
+#emptyState, #noResults{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; padding:0 30px; text-align:center;
+}
+#emptyState h2, #noResults h2{ font-size:15px; font-weight:700; margin:0;}
+#emptyState p, #noResults p{ font-size:12px; color:var(--text-dim); margin:0;}
+.big-add-btn{
+  background:var(--red); color:var(--on-red); font-weight:700; font-size:12.5px;
+  padding:10px 18px; border-radius:999px; display:flex; align-items:center; gap:6px;
+}
+.big-add-btn svg{width:13px;height:13px;}
+
+/* ---------- Overlay / sidebar ---------- */
+.overlay{ position:fixed; inset:0; z-index:40; pointer-events:none; }
+.overlay.open{ pointer-events:auto; }
+.scrim{ position:absolute; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(1px); opacity:0; transition:opacity .22s ease;}
+.overlay.open .scrim{ opacity:1;}
+#sidebar{
+  position:absolute; top:0; left:0; bottom:0;
+  width:78%; max-width:250px;
+  background:var(--sidebar-bg);
+  color:var(--sidebar-text);
+  --heart-outline:var(--sidebar-heart);
+  --heart-fill:var(--sidebar-accent);
+  border-right:1px solid var(--sidebar-border);
+  transform:translateX(-100%);
+  transition:transform .26s cubic-bezier(.32,.72,0,1);
+  display:flex; flex-direction:column;
+  padding:var(--safe-t) 10px var(--safe-b) var(--safe-l);
+}
+.overlay.open #sidebar{ transform:translateX(0);}
+#sidebarClose{ align-self:flex-end; margin-bottom:6px; background:var(--sidebar-btn-bg); border-color:var(--sidebar-btn-border); color:var(--sidebar-text);}
+.sidebar-scroll{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:2px;}
+.sb-item{
+  display:flex; align-items:center; gap:9px;
+  padding:9px 8px; border-radius:var(--r-sm);
+  font-size:12.5px; font-weight:600; text-align:left; width:100%;
+  color:var(--sidebar-text);
+}
+.sb-item:active{ background:var(--sidebar-press);}
+.sb-item.active{ background:var(--sidebar-active-bg); color:var(--sidebar-text);}
+.sb-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+.sb-heart{ width:14px; height:14px; flex-shrink:0;}
+.sb-icon{ width:14px; height:14px; flex-shrink:0; opacity:.85;}
+.sb-name{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.sb-count{ font-size:10.5px; color:var(--sidebar-text-faint); font-weight:700;}
+.sb-label{
+  font-size:9.5px; font-weight:800; letter-spacing:.8px; color:var(--sidebar-text-faint);
+  text-transform:uppercase; padding:10px 8px 4px;
+}
+.sb-newcat{
+  display:flex; align-items:center; gap:8px; padding:9px 8px; border-radius:var(--r-sm);
+  color:var(--sidebar-accent); font-size:12px; font-weight:700;
+}
+.sb-newcat svg{width:13px;height:13px;}
+.sb-divider{ height:1px; background:var(--sidebar-border); margin:8px 4px;}
+
+/* ---------- Fullscreen views ---------- */
+.fullscreen-view{
+  position:fixed; inset:0; z-index:30;
+  background:var(--bg);
+  display:flex; flex-direction:column;
+  animation:fv-in .2s ease;
+}
+@keyframes fv-in{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+.fv-header{
+  display:flex; align-items:center; gap:8px;
+  padding:var(--safe-t) var(--safe-r) 8px var(--safe-l);
+  flex-shrink:0;
+}
+.fv-header .fv-title{
+  flex:1; text-align:center; font-size:12.5px; font-weight:700;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.fv-body{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:0 var(--safe-r) calc(var(--safe-b) + 10px) var(--safe-l);}
+
+.fcd-photo{
+  width:100%; aspect-ratio:4/3; border-radius:var(--r-md); overflow:hidden;
+  background:var(--surface); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; color:var(--text-faint);
+  margin-bottom:10px;
+}
+.fcd-photo img{ width:100%; height:100%; object-fit:cover; cursor:pointer; }
+.fcd-thumbs{ display:flex; gap:8px; margin-bottom:16px; }
+.fcd-thumb{
+  width:56px; height:56px; border-radius:10px; overflow:hidden;
+  border:1px solid var(--border); background:var(--surface);
+}
+.fcd-thumb img{ width:100%; height:100%; object-fit:cover; }
+.fcd-name{ font-size:17px; font-weight:800; margin-bottom:12px; }
+.fcd-details{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
+  overflow:hidden;
+}
+.fcd-row{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:11px 13px; font-size:12.5px; border-bottom:1px solid var(--border);
+}
+.fcd-row:last-child{ border-bottom:none; }
+.fcd-label{ color:var(--text-faint); font-weight:600; }
+.fcd-value{ font-weight:700; text-align:right; }
+.status-badge{
+  display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:800;
+}
+.status-badge.active{ background:rgba(60,180,90,.16); color:#3cb45a; }
+.status-badge.suspended{ background:var(--danger-soft); color:var(--danger); }
+
+/* car detail */
+.cv-imgwrap{
+  position:relative; width:100%; aspect-ratio:1/1;
+  border-radius:var(--r-lg); overflow:hidden; background:var(--surface);
+  margin-bottom:12px;
+}
+.cv-imgwrap img{ width:100%; height:100%; object-fit:cover; display:block;}
+.cv-imgwrap .ph-icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.25;}
+.cv-imgwrap .ph-icon svg{width:30%;height:30%;}
+.cv-dots{ position:absolute; bottom:8px; left:0; right:0; display:flex; justify-content:center; gap:4px;}
+.cv-dots span{ width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.35);}
+.cv-dots span.on{ background:#fff;}
+.cv-navzone{ position:absolute; top:0; bottom:0; width:32%;}
+.cv-navzone.l{left:0;} .cv-navzone.r{right:0;}
+.cv-heart{
+  position:absolute; top:10px; right:10px;
+  width:32px; height:32px; border-radius:50%;
+  background:rgba(10,10,11,.6); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center;
+}
+.cv-heart svg{ width:15px; height:15px;}
+.cv-name{ font-size:18px; font-weight:800; letter-spacing:-.2px; margin:2px 0 2px;}
+.cv-year{ font-size:12.5px; color:var(--text-dim); font-weight:600; margin-bottom:10px;}
+.cv-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;}
+.cv-tag{
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:999px; padding:4px 10px 4px 7px;
+  font-size:9.5px; font-weight:800; letter-spacing:.4px; text-transform:uppercase;
+}
+.cv-tag .dot{width:7px;height:7px;border-radius:50%;}
+.cv-fields{ display:flex; flex-direction:column; gap:0; border-top:1px solid var(--border);}
+.cv-field{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:11px 2px; border-bottom:1px solid var(--border); gap:10px;
+}
+.cv-field .k{ font-size:11.5px; color:var(--text-faint); font-weight:600;}
+.cv-field .v{ font-size:12.5px; font-weight:700; text-align:right;}
+.cv-actions{ display:flex; gap:8px; margin-top:16px;}
+.btn{
+  flex:1; padding:11px 10px; border-radius:999px; font-size:12.5px; font-weight:700;
+  text-align:center; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.btn svg{width:13px;height:13px;}
+.btn-primary{ background:var(--red); color:var(--on-red);}
+.btn-secondary{ background:var(--surface); border:1px solid var(--border); color:var(--text);}
+.btn-danger{ background:var(--danger-soft); color:var(--danger); border:1px solid rgba(255,59,48,.3);}
+.btn-block{width:100%;}
+
+/* full screen photo viewer */
+#photoViewer{ background:#000; z-index:50;}
+#photoViewer .pv-header{
+  position:absolute; top:0; left:0; right:0; z-index:2;
+  display:flex; justify-content:flex-end;
+  padding:var(--safe-t) var(--safe-r) 0 var(--safe-l);
+}
+#photoViewer .pv-stage{ position:relative; flex:1; overflow:hidden;}
+#photoViewer .pv-stage img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+}
+#photoViewer .pv-dots{
+  position:absolute; bottom:var(--safe-b); left:0; right:0;
+  display:flex; justify-content:center; gap:5px; z-index:2;
+}
+#photoViewer .pv-dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.3);}
+#photoViewer .pv-dots span.on{ background:#fff;}
+
+/* edit/add form */
+.ph-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;}
+.ph-slot{
+  position:relative; aspect-ratio:1/1; border-radius:var(--r-md);
+  background:#f2f2f4; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+}
+.ph-slot img{ width:100%; height:100%; object-fit:cover; position:absolute; inset:0;}
+.ph-slot .ph-empty{
+  display:flex; flex-direction:column; align-items:center; gap:6px; color:#8a8a8f;
+}
+.ph-slot .ph-empty svg{ width:22px; height:22px;}
+.ph-slot .ph-empty span{ font-size:9.5px; font-weight:800; letter-spacing:.5px;}
+.ph-slot .ph-empty small{ font-size:8px; font-weight:600; color:#a6a6ab;}
+.ph-slot .ph-label{
+  position:absolute; top:5px; left:5px; z-index:2;
+  background:rgba(0,0,0,.55); color:#fff; font-size:7.5px; font-weight:800;
+  letter-spacing:.5px; padding:2px 6px; border-radius:999px;
+}
+.ph-slot .ph-overlay{
+  position:absolute; inset:0; background:rgba(0,0,0,.62);
+  display:flex; align-items:center; justify-content:center;
+}
+.ph-del-btn{
+  background:var(--red); color:var(--on-red); font-size:9.5px; font-weight:800;
+  letter-spacing:.4px; padding:8px 12px; border-radius:999px;
+  display:flex; align-items:center; gap:5px;
+}
+.ph-del-btn svg{width:11px;height:11px;}
+
+.field-group{ margin-bottom:12px;}
+.field-label{ font-size:10px; font-weight:800; letter-spacing:.5px; color:var(--text-faint); text-transform:uppercase; margin-bottom:5px; display:block;}
+.field-input, .field-select{
+  width:100%; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:11px 12px; font-size:13.5px; color:var(--text);
+  outline:none;
+}
+.field-input:focus, .field-select:focus{ border-color:var(--red);}
+.field-error{ color:var(--red); font-size:10.5px; font-weight:700; margin-top:4px;}
+.field-group.err .field-input, .field-group.err .field-select{ border-color:var(--red);}
+.field-label-hint{ float:right; text-transform:none; font-weight:600; letter-spacing:0; color:var(--text-faint); font-size:9px;}
+
+.cat-row{ display:flex; align-items:center; gap:7px; margin-bottom:7px;}
+.cat-row-select{
+  flex:1; min-width:0;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:9px 10px; font-size:12.5px; color:var(--text);
+  outline:none;
+}
+.cat-row-select:focus{ border-color:var(--red);}
+.cat-row-btn{
+  flex-shrink:0; width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--surface); border:1px solid var(--border); color:var(--text-faint);
+}
+.cat-row-btn svg{ width:12px; height:12px;}
+.cat-row-btn:active{ background:var(--surface-2);}
+.cat-add-btn{
+  width:100%; display:flex; align-items:center; justify-content:center; gap:6px;
+  background:none; border:1px dashed var(--border); border-radius:var(--r-sm);
+  padding:9px; font-size:11.5px; font-weight:700; color:var(--red); margin-top:2px;
+}
+.cat-add-btn svg{ width:12px; height:12px;}
+
+.qi-box{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
+  padding:10px; margin-bottom:14px; max-width:100%; overflow:hidden;
+}
+.qi-box .qi-title{ font-size:11px; font-weight:800; margin-bottom:2px; display:flex; align-items:center; justify-content:space-between;}
+.qi-box .qi-sub{ font-size:9.5px; color:var(--text-faint); margin-bottom:8px; line-height:1.4;}
+.qi-box textarea{
+  width:100%; min-height:78px; background:var(--bg-elev); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:9px 10px; font-size:11.5px; color:var(--text);
+  resize:vertical; outline:none; font-family:ui-monospace,Menlo,Consolas,monospace;
+}
+.qi-example{
+  font-size:9.5px; color:var(--text-faint); line-height:1.6; margin-top:6px;
+  font-family:ui-monospace,Menlo,Consolas,monospace; white-space:pre; overflow-x:auto;
+}
+.qi-apply{
+  margin-top:8px; width:100%; background:var(--surface-2); border:1px solid var(--border);
+  border-radius:999px; padding:8px; font-size:11px; font-weight:700;
+}
+.qi-label{ font-size:9.5px; font-weight:800; letter-spacing:.4px; color:var(--text-faint); text-transform:uppercase; margin:10px 0 5px;}
+.qi-codebox{
+  width:100%; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+  background:var(--bg-elev); border:1px solid var(--border); border-radius:var(--r-sm);
+  padding:9px 10px;
+}
+.qi-codebox code{
+  white-space:pre; font-size:10.5px; font-family:ui-monospace,Menlo,Consolas,monospace;
+  color:var(--text-dim);
+}
+.qi-copy-row{ position:relative; margin-top:7px;}
+.qi-copy-btn{
+  width:100%; background:var(--surface-2); border:1px solid var(--border);
+  border-radius:999px; padding:8px; font-size:11px; font-weight:700;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.qi-copy-btn svg{ width:12px; height:12px;}
+.qi-copied-msg{
+  position:absolute; top:-24px; left:50%; transform:translateX(-50%);
+  background:var(--red); color:var(--on-red); font-size:9.5px; font-weight:800;
+  padding:3px 10px; border-radius:999px; white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity .18s ease;
+}
+.qi-copied-msg.show{ opacity:1;}
+.qi-input{
+  width:100%; background:var(--bg-elev); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:9px 10px; font-size:11px; color:var(--text);
+  outline:none; font-family:ui-monospace,Menlo,Consolas,monospace;
+  overflow-x:auto; white-space:nowrap;
+}
+.qi-fill-btn{
+  margin-top:8px; width:100%; background:var(--red); color:var(--on-red); border:none;
+  border-radius:999px; padding:9px; font-size:11.5px; font-weight:700;
+}
+.packsize-row{ transition:opacity .15s ease;}
+
+.color-grid{ display:flex; flex-wrap:wrap; gap:9px; margin-top:4px;}
+.color-swatch{ width:26px; height:26px; border-radius:50%; border:2px solid transparent; position:relative;}
+.color-swatch.sel{ border-color:#fff;}
+.color-swatch.sel::after{
+  content:""; position:absolute; inset:-4px; border-radius:50%; border:1.5px solid var(--red);
+}
+
+/* ---------- Modals ---------- */
+.modal-overlay{
+  position:fixed; inset:0; z-index:60;
+  background:rgba(0,0,0,.55);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  animation:fv-in .15s ease;
+}
+.modal-card{
+  background:var(--bg-elev); border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:16px 14px; width:100%; max-width:260px;
+  text-align:center;
+}
+.modal-card h3{ font-size:13.5px; font-weight:800; margin:0 0 6px;}
+.modal-card p{ font-size:11px; color:var(--text-dim); margin:0 0 14px; line-height:1.4;}
+.modal-actions{ display:flex; flex-direction:column; gap:7px;}
+.ctx-menu-btn{
+  width:100%; padding:11px; border-radius:var(--r-sm); font-size:12.5px; font-weight:700;
+  background:var(--surface); border:1px solid var(--border);
+}
+.ctx-menu-btn.danger{ color:var(--danger);}
+.ctx-menu-btn.cancel{ color:var(--text-faint); background:none; border:none; margin-top:2px;}
+
+/* ---------- Toast ---------- */
+#toast{
+  position:fixed; left:50%; bottom:calc(var(--safe-b) + 8px); z-index:70;
+  transform:translateX(-50%);
+  background:rgba(26,26,28,.96); border:1px solid var(--border);
+  backdrop-filter:blur(8px);
+  border-radius:999px; padding:8px 8px 8px 14px;
+  display:flex; align-items:center; gap:10px;
+  font-size:11.5px; font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+  max-width:calc(100% - 40px);
+}
+#toastUndo{ color:var(--danger); font-weight:800; font-size:11.5px; padding:6px 10px; background:var(--danger-soft); border-radius:999px;}
+
+/* ---------- Settings ---------- */
+.settings-section{ margin-bottom:18px;}
+.settings-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 4px; border-bottom:1px solid var(--border);
+}
+.settings-row .lbl{ font-size:12.5px; font-weight:700;}
+.settings-row .sub{ font-size:10px; color:var(--text-faint); margin-top:2px;}
+.settings-row button{
+  background:var(--surface); border:1px solid var(--border); border-radius:999px;
+  padding:7px 12px; font-size:11px; font-weight:700; flex-shrink:0;
+}
+.settings-row button.danger{ color:var(--danger); border-color:rgba(255,59,48,.35);}
+.app-info{ text-align:center; padding:16px 0; color:var(--text-faint); font-size:10.5px; line-height:1.6;}
+
+::-webkit-scrollbar{ width:0; height:0;}
+
+/* ---------- Auth screen ---------- */
+#authLoading{
+  position:fixed; inset:0; z-index:100; background:var(--bg);
+  display:flex; align-items:center; justify-content:center;
+}
+.auth-spinner{
+  width:26px; height:26px; border-radius:50%;
+  border:2.5px solid var(--border); border-top-color:var(--red);
+  animation:auth-spin .7s linear infinite;
+}
+@keyframes auth-spin{ to{ transform:rotate(360deg); } }
+
+#authView{ z-index:80; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+#suspendedView{ z-index:90; align-items:center; justify-content:center; }
+.suspended-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; padding:0 28px; max-width:340px; }
+.suspended-icon{ width:64px; height:64px; border-radius:50%; background:var(--danger-soft); color:var(--danger); display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.suspended-icon svg{ width:30px; height:30px; }
+.suspended-wrap h2{ font-size:19px; font-weight:800; }
+.suspended-wrap p{ font-size:13px; color:var(--text-dim); line-height:1.5; }
+.suspended-wrap .suspended-sub{ font-size:11.5px; color:var(--text-faint); }
+.suspended-wrap .btn{ margin-top:8px; }
+.status-badge.you{ background:var(--red-soft); color:var(--text); }
+/* ---------- Leaderboard ---------- */
+#leaderboardScroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:4px var(--safe-r) 24px var(--safe-l); }
+.lb-toggle{ display:flex; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:3px; margin:6px 0 12px; }
+.lb-toggle button{ flex:1; padding:8px; border-radius:999px; font-size:12px; font-weight:800; color:var(--text-faint); }
+.lb-toggle button.active{ background:var(--red); color:var(--on-red); }
+.lb-you{ background:var(--surface); border:1px solid var(--red); border-radius:var(--r-md); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.lb-you .lbl{ font-size:10.5px; color:var(--text-faint); font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-bottom:2px; }
+.lb-you .pos{ font-size:22px; font-weight:800; }
+.lb-you .of{ font-size:12px; color:var(--text-faint); font-weight:600; margin-left:5px; }
+.lb-you .cars{ text-align:right; }
+.lb-you .cars .n{ font-size:20px; font-weight:800; }
+.lb-you .cars .l{ font-size:10px; color:var(--text-faint); font-weight:700; text-transform:uppercase; }
+.lb-row{ display:flex; align-items:center; gap:11px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:9px 12px; margin-bottom:7px; }
+.lb-row.me{ border-color:var(--red); }
+.lb-row.clickable{ cursor:pointer; }
+.lb-rank{ width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; background:var(--surface-2); color:var(--text-dim); }
+.lb-rank.top{ background:var(--red); color:var(--on-red); }
+.lb-count{ text-align:right; flex-shrink:0; }
+.lb-count .n{ font-size:15px; font-weight:800; }
+.lb-count .l{ font-size:9.5px; color:var(--text-faint); font-weight:700; text-transform:uppercase; }
+.lb-gap{ text-align:center; color:var(--text-faint); padding:0 0 8px; font-size:13px; letter-spacing:3px; }
+
+/* ---------- Friend vault search + filter ---------- */
+.fv-controls{ display:flex; gap:8px; padding:0 var(--safe-r) 8px var(--safe-l); flex-shrink:0; }
+.fv-controls input{ flex:1; min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:9px 11px; color:var(--text); font-size:12.5px; }
+.fv-controls select{ max-width:44%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:9px 8px; color:var(--text); font-size:12px; font-weight:600; }
+
+/* ---------- Update log ---------- */
+.settings-link-row{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:9px 12px; margin-top:4px; font-size:11.5px; font-weight:600; color:var(--text-faint); background:none; border:none; border-radius:10px; }
+.settings-link-row:active{ background:var(--surface); }
+.ul-intro{ font-size:11.5px; color:var(--text-faint); padding:2px 2px 12px; line-height:1.45; }
+.ul-entry{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:12px 14px; margin-bottom:10px; }
+.ul-head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ul-ver{ font-size:11.5px; font-weight:800; padding:3px 9px; border-radius:999px; background:var(--red); color:var(--on-red); }
+.ul-current{ font-size:9.5px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--text-faint); }
+.ul-title{ font-size:13px; font-weight:800; width:100%; margin-top:2px; }
+.ul-list{ margin:6px 0 0; padding-left:16px; }
+.ul-list li{ font-size:12px; color:var(--text-dim); line-height:1.45; margin-bottom:3px; }
+
+.auth-wrap{
+  min-height:100%;
+  display:flex; flex-direction:column;
+  padding:calc(var(--safe-t) + 26px) var(--safe-r) 40px var(--safe-l);
+  max-width:380px; margin:0 auto; width:100%;
+}
+.auth-logo{ display:flex; justify-content:center; margin-bottom:28px;}
+.auth-logo-ring{
+  width:112px; height:112px; border-radius:50%;
+  border:1.5px solid var(--red);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  background:radial-gradient(circle at 50% 40%, rgba(255,59,48,.12), transparent 70%);
+}
+.auth-logo-ring span{ font-size:15px; font-weight:800; letter-spacing:.5px; line-height:1;}
+.auth-logo-ring span.red{ color:var(--red);}
+.auth-logo-ring::after{ content:""; width:26px; height:2px; background:var(--red); margin-top:5px;}
+.auth-tabs{
+  display:flex; background:var(--surface); border:1px solid var(--border);
+  border-radius:999px; padding:3px; margin-bottom:22px;
+}
+.auth-tab{
+  flex:1; text-align:center; padding:9px 6px; border-radius:999px;
+  font-size:12px; font-weight:800; letter-spacing:.3px; color:var(--text-faint);
+}
+.auth-tab.active{ background:var(--red); color:var(--on-red);}
+.auth-form.hidden{ display:none;}
+.pw-wrap{ position:relative;}
+.pw-wrap .field-input{ padding-right:42px;}
+.pw-eye{
+  position:absolute; right:4px; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+  color:var(--text-faint);
+}
+.pw-eye svg{ width:17px; height:17px;}
+.auth-avatar-picker{ display:flex; align-items:center; gap:14px; margin-bottom:18px;}
+.auth-avatar-circle{
+  width:64px; height:64px; border-radius:50%; flex-shrink:0;
+  background:var(--surface); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  color:var(--text-faint);
+}
+.auth-avatar-circle img{ width:100%; height:100%; object-fit:cover;}
+.auth-avatar-circle svg{ width:26px; height:26px;}
+.auth-avatar-btns{ display:flex; flex-direction:column; gap:6px;}
+.auth-avatar-btns button{
+  background:var(--surface); border:1px solid var(--border); border-radius:999px;
+  padding:7px 12px; font-size:11px; font-weight:700; color:var(--text);
+}
+.auth-switch{ text-align:center; margin-top:16px; font-size:11.5px; color:var(--text-dim);}
+.auth-switch a{ color:var(--red); font-weight:700;}
+.auth-form .field-error{ margin-bottom:10px; text-align:center;}
+</style>
+</head>
+<body>
+
+<script>
+(function(){
+  try{
+    var saved = localStorage.getItem("dv-theme");
+    if(saved && saved !== "blueberry"){
+      document.documentElement.setAttribute("data-theme", saved);
+    }
+  }catch(e){}
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<div id="authLoading">
+  <div class="auth-spinner"></div>
+</div>
+
+<!-- Shown when an account is suspended (at sign-in, or while the app is already open) -->
+<div class="fullscreen-view hidden" id="suspendedView">
+  <div class="suspended-wrap">
+    <div class="suspended-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg></div>
+    <h2>Account Suspended</h2>
+    <p>Your account has been suspended by an administrator, so you can't use Diecast Vault right now.</p>
+    <p class="suspended-sub">If you think this is a mistake, contact whoever runs this app.</p>
+    <button type="button" class="btn btn-primary" id="suspendedBackBtn">Back to Sign In</button>
+  </div>
+</div>
+
+<!-- Auth screen -->
+<div class="fullscreen-view hidden" id="authView">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <div class="auth-logo-ring"><span>DIECAST</span><span class="red">VAULT</span></div>
+    </div>
+
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" id="tabSignIn">Sign In</button>
+      <button type="button" class="auth-tab" id="tabCreate">Create Account</button>
+    </div>
+
+    <form class="auth-form" id="signInForm" autocomplete="on">
+      <div class="field-group">
+        <label class="field-label">Username</label>
+        <input class="field-input" id="siUsername" autocomplete="username" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <div class="pw-wrap">
+          <input class="field-input" id="siPassword" type="password" autocomplete="current-password" required>
+          <button type="button" class="pw-eye" data-target="siPassword"></button>
+        </div>
+      </div>
+      <div class="field-error hidden" id="siError"></div>
+      <button type="submit" class="btn btn-primary btn-block" id="siSubmit">Sign In</button>
+      <div class="auth-switch"><a id="siForgot">Forgot password?</a></div>
+      <div class="auth-switch">New here? <a id="siGoCreate">Create an account</a></div>
+    </form>
+
+    <form class="auth-form hidden" id="resetForm" autocomplete="on">
+      <div class="field-group">
+        <label class="field-label">Username</label>
+        <input class="field-input" id="rsUsername" autocomplete="username" required>
+      </div>
+      <div class="field-error hidden" id="rsError"></div>
+      <div class="auth-switch hidden" id="rsSent">If that account exists, a reset link has been sent to its email. Check your inbox.</div>
+      <button type="submit" class="btn btn-primary btn-block" id="rsSubmit">Send Reset Link</button>
+      <div class="auth-switch"><a id="rsGoSignIn">Back to sign in</a></div>
+    </form>
+
+    <form class="auth-form hidden" id="newPasswordForm" autocomplete="on">
+      <div class="field-group">
+        <label class="field-label">New Password</label>
+        <div class="pw-wrap">
+          <input class="field-input" id="npPassword" type="password" autocomplete="new-password" required>
+          <button type="button" class="pw-eye" data-target="npPassword"></button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Confirm New Password</label>
+        <div class="pw-wrap">
+          <input class="field-input" id="npConfirm" type="password" autocomplete="new-password" required>
+          <button type="button" class="pw-eye" data-target="npConfirm"></button>
+        </div>
+      </div>
+      <div class="field-error hidden" id="npError"></div>
+      <button type="submit" class="btn btn-primary btn-block" id="npSubmit">Set New Password</button>
+    </form>
+
+    <form class="auth-form hidden" id="createForm" autocomplete="on">
+      <div class="auth-avatar-picker">
+        <div class="auth-avatar-circle" id="avatarPreview"></div>
+        <div class="auth-avatar-btns">
+          <button type="button" id="avatarUploadBtn">Upload Photo</button>
+          <button type="button" id="avatarCameraBtn">Take Photo</button>
+        </div>
+        <input type="file" id="avatarUploadInput" accept="image/*" style="display:none">
+        <input type="file" id="avatarCameraInput" accept="image/*" capture="user" style="display:none">
+      </div>
+      <div class="field-group">
+        <label class="field-label">First Name</label>
+        <input class="field-input" id="caFirst" autocomplete="given-name" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Last Name</label>
+        <input class="field-input" id="caLast" autocomplete="family-name" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Date of Birth</label>
+        <input class="field-input" id="caDob" type="date" autocomplete="bday" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Email</label>
+        <input class="field-input" id="caEmail" type="email" autocomplete="email" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Username</label>
+        <input class="field-input" id="caUsername" autocomplete="username" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <div class="pw-wrap">
+          <input class="field-input" id="caPassword" type="password" autocomplete="new-password" required>
+          <button type="button" class="pw-eye" data-target="caPassword"></button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Confirm Password</label>
+        <div class="pw-wrap">
+          <input class="field-input" id="caConfirm" type="password" autocomplete="new-password" required>
+          <button type="button" class="pw-eye" data-target="caConfirm"></button>
+        </div>
+      </div>
+      <div class="field-error hidden" id="caError"></div>
+      <button type="submit" class="btn btn-primary btn-block" id="caSubmit">Create Account</button>
+      <div class="auth-switch">Already have an account? <a id="caGoSignIn">Sign in</a></div>
+    </form>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <div id="vaultScreen" class="app-screen active">
+    <div class="topbar">
+      <button class="icon-btn" id="menuBtn" aria-label="Categories">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>
+      </button>
+      <div class="topbar-title">
+        <div class="name" id="titleName">All</div>
+        <div class="count" id="titleCount">0 CARS</div>
+      </div>
+      <button class="icon-btn" id="searchBtn" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </div>
+
+    <div id="searchBar" class="hidden">
+      <button id="searchFieldBtn">
+        <span id="searchFieldLabel">Name</span>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <div id="searchInputWrap">
+        <input id="searchInput" placeholder="Search…" autocomplete="off">
+        <button id="searchClear" class="hidden">×</button>
+      </div>
+    </div>
+
+    <div id="collectionScroll">
+      <div id="collection"></div>
+      <div id="emptyState" class="hidden">
+        <h2>No cars yet</h2>
+        <p>Start your collection.</p>
+        <button class="big-add-btn" id="emptyAddBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Car
+        </button>
+      </div>
+      <div id="noResults" class="hidden">
+        <h2>No cars found</h2>
+        <p>Try another search.</p>
+      </div>
+    </div>
+    <button class="fab-add" id="fabAdd" aria-label="Add car"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+  </div>
+
+  <!-- Friends screen -->
+  <div id="friendsScreen" class="app-screen">
+    <div class="topbar">
+      <div style="width:36px;"></div>
+      <div class="topbar-title"><div class="name">Friends</div></div>
+      <div style="width:36px;"></div>
+    </div>
+    <div id="friendsScroll">
+      <div class="friends-search-row">
+        <input id="friendSearchInput" placeholder="Search by @username…" autocomplete="off">
+        <button id="friendSearchBtn" class="btn btn-primary">Search</button>
+      </div>
+      <div id="friendSearchResults"></div>
+      <div id="friendRequestsSection"></div>
+      <div id="friendsListSection"></div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+  <!-- Leaderboard screen -->
+  <div id="leaderboardScreen" class="app-screen">
+    <div class="topbar">
+      <div style="width:36px;"></div>
+      <div class="topbar-title"><div class="name">Leaderboard</div></div>
+      <div style="width:36px;"></div>
+    </div>
+    <div id="leaderboardScroll">
+      <div class="lb-toggle">
+        <button type="button" id="lbModeAll" class="active">All Users</button>
+        <button type="button" id="lbModeFriends">Friends</button>
+      </div>
+      <div id="lbYou"></div>
+      <div id="lbList"></div>
+    </div>
+  </div>
+
+  <!-- Profile screen -->
+  <div id="profileScreen" class="app-screen">
+    <div class="topbar">
+      <div style="width:36px;"></div>
+      <div class="topbar-title"><div class="name">Profile</div></div>
+      <button class="icon-btn" id="profileSettingsBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div id="profileScroll"></div>
+  </div>
+
+  <!-- Admin screen -->
+  <div id="adminScreen" class="app-screen">
+    <div class="topbar">
+      <div style="width:36px;"></div>
+      <div class="topbar-title"><div class="name">Admin</div></div>
+      <div style="width:36px;"></div>
+    </div>
+    <div id="adminScroll">
+      <div class="friends-search-row">
+        <input id="adminSearchInput" placeholder="Search users…" autocomplete="off">
+      </div>
+      <div id="adminUserList"></div>
+    </div>
+  </div>
+
+
+
+  <div id="bottomNav">
+    <button class="nav-item active" id="navVault" data-screen="vaultScreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg>
+      <span>Vault</span>
+    </button>
+    <button class="nav-item" id="navFriends" data-screen="friendsScreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M15 14.2c2.7.3 5 2.4 5 5.8"/></svg>
+      <span>Friends</span>
+      <span class="nav-badge hidden" id="friendsBadge"></span>
+    </button>
+    <button class="nav-item" id="navLeaderboard" data-screen="leaderboardScreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg>
+      <span>Leaderboard</span>
+    </button>
+    <button class="nav-item" id="navProfile" data-screen="profileScreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <span>Profile</span>
+    </button>
+    <button class="nav-item hidden" id="navAdmin" data-screen="adminScreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>
+      <span>Admin</span>
+    </button>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="overlay" id="sidebarOverlay">
+  <div class="scrim" id="sidebarScrim"></div>
+  <nav id="sidebar">
+    <button class="icon-btn" id="sidebarClose" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+    </button>
+    <div class="sidebar-scroll" id="sidebarList"></div>
+  </nav>
+</div>
+
+<!-- Overlays that open on top of other screens live here at body level (NOT inside #app):
+     #app is position:fixed, which creates its own stacking context, so anything inside it
+     can never rise above overlays outside it, whatever its z-index. -->
+  <!-- Friend's vault (read-only) -->
+  <div class="fullscreen-view hidden" id="friendVaultView">
+    <div class="fv-header">
+      <button class="icon-btn" id="friendVaultCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="fv-title" id="friendVaultTitle">Vault</div>
+      <button class="icon-btn" id="friendVaultMenuBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+      </button>
+    </div>
+    <div class="fv-controls hidden" id="friendVaultControls">
+      <input id="friendVaultSearch" placeholder="Search this vault…" autocomplete="off">
+      <select id="friendVaultFilter" aria-label="Filter by category"></select>
+    </div>
+    <div class="fv-body" id="friendVaultBody"></div>
+  </div>
+  <!-- Read-only detail view for a friend's car -->
+  <div class="fullscreen-view hidden" id="friendCarDetailView">
+    <div class="fv-header">
+      <button class="icon-btn" id="friendCarDetailCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="fv-title">Car Details</div>
+      <div style="width:36px;"></div>
+    </div>
+    <div class="fv-body" id="friendCarDetailBody"></div>
+  </div>
+  <!-- Theme picker -->
+  <div class="fullscreen-view hidden" id="themePickerView">
+    <div class="fv-header">
+      <button class="icon-btn" id="themePickerCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+      </button>
+      <div class="fv-title">Choose a Theme</div>
+      <div style="width:36px;"></div>
+    </div>
+    <div class="fv-body" id="themePickerBody"></div>
+  </div>
+  <!-- Admin user detail -->
+  <div class="fullscreen-view hidden" id="adminUserDetailView">
+    <div class="fv-header">
+      <button class="icon-btn" id="adminUserDetailCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="fv-title">Account</div>
+      <div style="width:36px;"></div>
+    </div>
+    <div class="fv-body" id="adminUserDetailBody"></div>
+  </div>
+
+<!-- Update log -->
+<div class="fullscreen-view hidden" id="updateLogView">
+  <div class="fv-header">
+    <button class="icon-btn" id="updateLogCloseBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="fv-title">Update Log</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="fv-body" id="updateLogBody"></div>
+</div>
+
+<!-- Add / Edit view -->
+<div class="fullscreen-view hidden" id="editView">
+  <div class="fv-header">
+    <button class="icon-btn" id="editCloseBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+    </button>
+    <div class="fv-title" id="editTitle">Add Car</div>
+    <button class="icon-btn" id="editSaveBtn" style="background:var(--red);border-color:var(--red);">
+      <svg viewBox="0 0 24 24" fill="none" style="stroke:var(--on-red);" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </button>
+  </div>
+  <div class="fv-body" id="editBody"></div>
+</div>
+
+<!-- Car detail view -->
+<div class="fullscreen-view hidden" id="carView">
+  <div class="fv-header">
+    <button class="icon-btn" id="carCloseBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="fv-title" id="carViewTitle">Car</div>
+    <button class="icon-btn" id="carEditBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    </button>
+  </div>
+  <div class="fv-body" id="carViewBody"></div>
+</div>
+
+<!-- Full screen photo viewer -->
+<div class="fullscreen-view hidden" id="photoViewer">
+  <div class="pv-header">
+    <button class="icon-btn" id="pvCloseBtn" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+    </button>
+  </div>
+  <div class="pv-stage" id="pvStage">
+    <img id="pvImg" src="" alt="">
+    <div class="cv-navzone l" id="pvPrev"></div>
+    <div class="cv-navzone r" id="pvNext"></div>
+  </div>
+  <div class="pv-dots" id="pvDots"></div>
+</div>
+
+<!-- Settings view -->
+<div class="fullscreen-view hidden" id="settingsView">
+  <div class="fv-header">
+    <button class="icon-btn" id="settingsCloseBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="fv-title">Settings</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="fv-body" id="settingsBody"></div>
+</div>
+
+<!-- Context menu / confirm modal -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden">
+  <span id="toastMsg"></span>
+  <button id="toastUndo" class="hidden">UNDO</button>
+</div>
+
+<input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="importInput" accept="application/json" style="display:none">
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+var PHOTO_SLOTS = ["front","back","wheels","interior"];
+
+// All .fullscreen-view overlays share one base z-index, so which one visibly
+// stacks on top otherwise depends on DOM order rather than open order — this
+// bumps whichever one is opened above every other currently-open overlay.
+function bringToFront(el){
+  var max = 29;
+  document.querySelectorAll(".fullscreen-view:not(.hidden)").forEach(function(v){
+    if(v === el) return;
+    var z = parseInt(window.getComputedStyle(v).zIndex, 10) || 30;
+    if(z > max) max = z;
+  });
+  el.style.zIndex = Math.min(max + 1, 49);
+}
+
+var THEMES = {
+  "blueberry":    { name:"Blueberry",    bg:"#12204f", surface:"#1d3374", accent:"#FFF0C9", text:"#fff6e0", textFaint:"#8b9ad1" },
+  "lime-spark":   { name:"Lime Spark",   bg:"#B6FF2E", surface:"#a2e329", accent:"#23262F", text:"#20261a", textFaint:"#68724f" },
+  "burnt-orange": { name:"Burnt Orange", bg:"#FC6C26", surface:"#e06022", accent:"#FFF4D6", text:"#3a1a06", textFaint:"#8a5a3a" },
+  "warm-lime":    { name:"Warm Lime",    bg:"#1d2412", surface:"#2b351b", accent:"#CFFF74", text:"#eaffc9", textFaint:"#8b9a72" },
+  "cyber-grape":  { name:"Cyber Grape",  bg:"#441987", surface:"#6425c8", accent:"#D7FF00", text:"#f3eeff", textFaint:"#9884c2" },
+  "cyber-teal":   { name:"Cyber Teal",   bg:"#021e24", surface:"#032d35", accent:"#8FFFE0", text:"#eafffb", textFaint:"#5f9c93" }
+};
+
+function getCurrentThemeKey(){
+  var attr = document.documentElement.getAttribute("data-theme");
+  return (attr && THEMES[attr]) ? attr : "blueberry";
+}
+
+function setTheme(key){
+  if(!THEMES[key]) key = "blueberry";
+  if(key === "blueberry"){
+    document.documentElement.removeAttribute("data-theme");
+  } else {
+    document.documentElement.setAttribute("data-theme", key);
+  }
+  try{ localStorage.setItem("dv-theme", key); }catch(e){}
+  // Best-effort sync so the theme follows the account across devices —
+  // localStorage above is just for an instant, flash-free apply on this device.
+  if(window.DVAuth && window.DVAuth.profile && window.DVAuth.client){
+    window.DVAuth.client.from("profiles").update({ theme: key }).eq("id", window.DVAuth.profile.id).then(function(){});
+  }
+}
+
+function themeTileHTML(key, selected){
+  var t = THEMES[key];
+  return '<button type="button" class="theme-tile'+(selected?" selected":"")+'" data-theme-key="'+key+'">'+
+    '<div class="theme-tile-preview" style="background:'+t.bg+';">'+
+      '<div class="theme-preview-card" style="background:'+t.surface+';">'+
+        '<div class="theme-preview-photo" style="background:'+t.bg+';">'+
+          '<div class="theme-preview-dot" style="background:'+t.accent+';"></div>'+
+        '</div>'+
+        '<div class="theme-preview-line" style="background:'+t.text+';"></div>'+
+        '<div class="theme-preview-line short" style="background:'+t.textFaint+';"></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="theme-tile-name">'+t.name+'</div>'+
+  '</button>';
+}
+
+// isFirstRun: true only right after account creation (shows the intro
+// sentence); reopening from Settings later omits it since it'd be redundant.
+function openThemePicker(isFirstRun){
+  var body = document.getElementById("themePickerBody");
+  var current = getCurrentThemeKey();
+  body.innerHTML =
+    (isFirstRun ? '<div class="theme-picker-intro">Pick a look for Diecast Vault. You can always change this later in Settings.</div>' : '')+
+    '<div class="theme-grid">'+
+      Object.keys(THEMES).map(function(k){ return themeTileHTML(k, k===current); }).join("")+
+    '</div>';
+  body.querySelectorAll(".theme-tile").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-theme-key");
+      setTheme(key);
+      body.querySelectorAll(".theme-tile").forEach(function(b){ b.classList.toggle("selected", b===btn); });
+      if(document.getElementById("settingsView") && !document.getElementById("settingsView").classList.contains("hidden")){
+        renderSettings();
+      }
+    });
+  });
+  var _tpv=document.getElementById("themePickerView"); bringToFront(_tpv); _tpv.classList.remove("hidden");
+}
+document.getElementById("themePickerCloseBtn").addEventListener("click", function(){
+  document.getElementById("themePickerView").classList.add("hidden");
+});
+
+window.DVApp = window.DVApp || {};
+window.DVApp.openThemePicker = openThemePicker;
+window.DVApp.applyStoredTheme = function(themeKey){
+  setTheme(themeKey || "blueberry");
+};
+
+var PHOTO_LABELS = {front:"FRONT", back:"BACK", wheels:"WHEELS", interior:"INTERIOR"};
+var SEARCH_FIELDS = [
+  {key:"name", label:"Name"},
+  {key:"year", label:"Year"},
+  {key:"extColor", label:"Exterior Color"},
+  {key:"intColor", label:"Interior Color"},
+  {key:"madeIn", label:"Made In"}
+];
+var CATEGORY_COLORS = [
+  {name:"Blue", hex:"#3b82f6"},
+  {name:"Orange", hex:"#f97316"},
+  {name:"Purple", hex:"#a855f7"},
+  {name:"Pink", hex:"#ec4899"},
+  {name:"Red", hex:"#ef4444"},
+  {name:"Green", hex:"#34c759"},
+  {name:"White", hex:"#f5f5f7"},
+  {name:"Yellow", hex:"#ffd60a"},
+  {name:"Cyan", hex:"#32ade6"},
+  {name:"Gray", hex:"#9ca3af"}
+];
+var APP_VERSION = "2.8.0";
+
+/* ============================================================
+   SVG ICONS
+   ============================================================ */
+function heartIcon(filled){
+  return '<svg viewBox="0 0 24 24" fill="'+(filled?"var(--heart-fill, var(--red))":"none")+'" stroke="'+(filled?"var(--heart-fill, var(--red))":"var(--heart-outline, #fff)")+'" stroke-width="2"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.2 2 4.5 5.7 4c2.1-.3 4 1 6.3 3.3C14.3 5 16.2 3.7 18.3 4c3.7.5 5.3 4.2 3.7 7.7C19.5 16.4 12 21 12 21z"/></svg>';
+}
+function carSilhouette(){
+  return '<svg viewBox="0 0 64 40" fill="currentColor"><path d="M9 26c-3 0-5-2-5-5 0-2 1-3 3-4l4-7c1-2 3-3 5-3h24c2 0 4 1 5 3l4 7c2 1 3 2 3 4 0 3-2 5-5 5H9z" opacity=".9"/><circle cx="16" cy="27" r="6" fill="#0a0a0b"/><circle cx="48" cy="27" r="6" fill="#0a0a0b"/><circle cx="16" cy="27" r="2.4"/><circle cx="48" cy="27" r="2.4"/></svg>';
+}
+function cameraIcon(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+}
+function trashIcon(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function uid(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'id-'+Date.now()+'-'+Math.random().toString(16).slice(2);
+}
+function esc(s){
+  s = (s===undefined||s===null) ? "" : String(s);
+  return s.replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function hasAnyPhoto(car){
+  return PHOTO_SLOTS.some(function(s){ return car.photos && car.photos[s]; });
+}
+function firstPhoto(car){
+  for(var i=0;i<PHOTO_SLOTS.length;i++){ if(car.photos && car.photos[PHOTO_SLOTS[i]]) return car.photos[PHOTO_SLOTS[i]]; }
+  return null;
+}
+function existingPhotoList(car){
+  return PHOTO_SLOTS.filter(function(s){ return car.photos && car.photos[s]; })
+                     .map(function(s){ return car.photos[s]; });
+}
+
+/* Resize + compress an image file into a dataURL */
+function compressImage(file, maxDim, quality){
+  maxDim = maxDim || 900; quality = quality || 0.72;
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onerror = function(){ reject(new Error("read fail")); };
+    reader.onload = function(){
+      var img = new Image();
+      img.onerror = function(){ reject(new Error("decode fail")); };
+      img.onload = function(){
+        var w = img.width, h = img.height;
+        var scale = Math.min(1, maxDim / Math.max(w,h));
+        var cw = Math.max(1, Math.round(w*scale)), ch = Math.max(1, Math.round(h*scale));
+        var canvas = document.createElement("canvas");
+        canvas.width = cw; canvas.height = ch;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, cw, ch);
+        try{
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        }catch(e){ reject(e); }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ============================================================
+   STORAGE LAYER — SUPABASE
+   Cars, categories, and photos live in Supabase (Postgres + Storage)
+   so they sync across every device on the same account, enforced by
+   Row Level Security. The public functions below (getAllCars,
+   putCar, etc.) keep the exact same names/shapes the rest of the
+   app already uses, so nothing above this layer needed to change.
+   ============================================================ */
+var usingSupabase = true;
+
+function sbc(){ return window.DVAuth.client; }
+function myUid(){ return window.DVAuth.profile.id; }
+
+function carPhotoPath(carId, slot){
+  return myUid() + "/" + carId + "/" + slot + ".jpg";
+}
+function dataUrlToBlob(dataUrl){
+  return fetch(dataUrl).then(function(r){ return r.blob(); });
+}
+// value: null/undefined (no photo), a "data:" URL (new/changed photo to
+// upload), or an existing string (already-uploaded photo, unchanged).
+// Resolves to true if a photo should be recorded as present for this slot.
+function uploadCarPhotoIfNeeded(carId, slot, value){
+  var path = carPhotoPath(carId, slot);
+  if(value && typeof value === "string" && value.indexOf("data:") === 0){
+    return dataUrlToBlob(value).then(function(blob){
+      return sbc().storage.from("car-photos").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+    }).then(function(res){
+      if(res.error) throw res.error;
+      return true;
+    });
+  }
+  if(value) return Promise.resolve(true);
+  return Promise.resolve(false);
+}
+function signedUrlsForPaths(paths){
+  if(!paths.length) return Promise.resolve({});
+  return sbc().storage.from("car-photos").createSignedUrls(paths, 60*60*24).then(function(res){
+    var map = {};
+    (res.data||[]).forEach(function(item){ if(item && item.signedUrl && item.path) map[item.path] = item.signedUrl; });
+    return map;
+  }).catch(function(){ return {}; });
+}
+
+function sbGetAllCategories(){
+  return sbc().from("categories").select("*").eq("owner_id", myUid()).order("created_at", { ascending: true })
+    .then(function(res){
+      if(res.error) throw res.error;
+      return (res.data||[]).map(function(r, i){
+        return { id: r.id, name: r.name, color: r.color, builtin: r.is_builtin, order: i };
+      });
+    });
+}
+
+function sbPutCategory(cat){
+  var row = { id: cat.id || uid(), owner_id: myUid(), name: cat.name, color: cat.color || "#ff3b30", is_builtin: !!cat.builtin };
+  return sbc().from("categories").upsert(row, { onConflict: "id" }).then(function(res){
+    if(res.error){
+      if(res.error.code === "23505") throw new Error("A category with that name already exists.");
+      throw res.error;
+    }
+    return row.id;
+  });
+}
+
+function sbDeleteCategory(id){
+  return sbc().from("categories").delete().eq("id", id).then(function(res){ if(res.error) throw res.error; });
+}
+
+function sbGetAllCars(){
+  return sbc().from("cars").select("*, car_categories(category_id)").eq("owner_id", myUid()).order("created_at", { ascending: false })
+    .then(function(res){
+      if(res.error) throw res.error;
+      var rows = res.data || [];
+      var pathMeta = [];
+      rows.forEach(function(r){
+        PHOTO_SLOTS.forEach(function(slot){
+          if(r.photos && r.photos[slot]){
+            pathMeta.push({ carId: r.id, slot: slot, path: r.owner_id + "/" + r.id + "/" + slot + ".jpg" });
+          }
+        });
+      });
+      return signedUrlsForPaths(pathMeta.map(function(m){ return m.path; })).then(function(urlMap){
+        return rows.map(function(r){
+          var photos = {};
+          pathMeta.filter(function(m){ return m.carId === r.id; }).forEach(function(m){
+            photos[m.slot] = urlMap[m.path] || null;
+          });
+          return {
+            id: r.id, name: r.name, brand: r.brand, year: r.year,
+            extColor: r.ext_color, intColor: r.int_color, madeIn: r.made_in,
+            packagingType: r.packaging_type, packSize: r.pack_size,
+            favourite: r.favorite, visibility: r.visibility,
+            categoryIds: (r.car_categories||[]).map(function(cc){ return cc.category_id; }),
+            photos: photos,
+            createdAt: new Date(r.created_at).getTime(),
+            order: new Date(r.created_at).getTime(),
+            ownerId: r.owner_id
+          };
+        });
+      });
+    });
+}
+
+function sbPutCar(car){
+  var carId = car.id || uid();
+  var draft = car.photos || {};
+  return Promise.all(PHOTO_SLOTS.map(function(slot){
+    return uploadCarPhotoIfNeeded(carId, slot, draft[slot]).then(function(present){ return { slot: slot, present: present }; });
+  })).then(function(results){
+    var photosFlags = {};
+    results.forEach(function(r){ if(r.present) photosFlags[r.slot] = true; });
+    var row = {
+      id: carId, owner_id: myUid(),
+      name: car.name, brand: car.brand || null, year: car.year || null,
+      ext_color: car.extColor || null, int_color: car.intColor || null, made_in: car.madeIn || null,
+      packaging_type: car.packagingType || null, pack_size: car.packSize || null,
+      favorite: !!car.favourite,
+      visibility: car.visibility === "friends" ? "friends" : "private",
+      photos: photosFlags
+    };
+    return sbc().from("cars").upsert(row, { onConflict: "id" });
+  }).then(function(res){
+    if(res.error) throw res.error;
+    return sbc().from("car_categories").delete().eq("car_id", carId);
+  }).then(function(){
+    var cats = (car.categoryIds||[]).map(function(cid){ return { car_id: carId, category_id: cid }; });
+    if(!cats.length) return Promise.resolve();
+    return sbc().from("car_categories").insert(cats).then(function(res){ if(res.error) throw res.error; });
+  }).then(function(){ return carId; });
+}
+
+// Deliberately does NOT remove the car's photo files from storage — the
+// app offers a 5-second "undo" after delete that re-inserts the same car
+// row, and eagerly deleting the images would leave that restored car
+// pointing at now-missing photos. Orphaned photo files from genuinely
+// deleted cars are a minor, private (RLS-protected) storage cost rather
+// than a correctness bug — Reset Collection below does clean them up
+// since that action has no undo.
+function sbDeleteCar(carId){
+  return sbc().from("cars").delete().eq("id", carId).then(function(res){ if(res.error) throw res.error; });
+}
+
+function sbClearStore(name){
+  if(name === "categories"){
+    return sbc().from("categories").delete().eq("owner_id", myUid()).then(function(res){ if(res.error) throw res.error; });
+  }
+  if(name === "cars"){
+    return sbc().from("cars").select("id").eq("owner_id", myUid()).then(function(res){
+      if(res.error) throw res.error;
+      var paths = [];
+      (res.data||[]).forEach(function(r){ PHOTO_SLOTS.forEach(function(slot){ paths.push(carPhotoPath(r.id, slot)); }); });
+      var removePhotos = paths.length ? sbc().storage.from("car-photos").remove(paths).catch(function(){}) : Promise.resolve();
+      return removePhotos.then(function(){ return sbc().from("cars").delete().eq("owner_id", myUid()); });
+    }).then(function(res){ if(res && res.error) throw res.error; });
+  }
+  return Promise.resolve();
+}
+
+/* ---- public storage API used by the rest of the app (unchanged names) ---- */
+function getAllCategories(){ return sbGetAllCategories(); }
+function getAllCars(){ return sbGetAllCars(); }
+function putCategory(cat){ return sbPutCategory(cat).catch(handleStorageError); }
+function deleteCategoryDB(id){ return sbDeleteCategory(id).catch(handleStorageError); }
+function putCar(car){ return sbPutCar(car).catch(handleStorageError); }
+function deleteCarDB(id){ return sbDeleteCar(id).catch(handleStorageError); }
+function clearStore(name){ return sbClearStore(name).catch(handleStorageError); }
+
+function handleStorageError(err){
+  console.error("Storage error", err);
+  showToast((err && err.message) ? err.message : "Something went wrong saving that. Please try again.");
+  throw err;
+}
+
+function ensureBuiltins(){
+  return getAllCategories().then(function(cats){
+    var haveHW = cats.some(function(c){ return c.name === "Hot Wheels"; });
+    var haveMB = cats.some(function(c){ return c.name === "Matchbox"; });
+    var jobs = [];
+    if(!haveHW) jobs.push(putCategory({id:uid(), name:"Hot Wheels", color:"#3b82f6", builtin:true}));
+    if(!haveMB) jobs.push(putCategory({id:uid(), name:"Matchbox", color:"#f97316", builtin:true}));
+    return Promise.all(jobs);
+  });
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+var state = {
+  categories: [],
+  cars: [],
+  filter: "all",          // 'all' | 'favourites' | categoryId
+  searchOpen: false,
+  searchField: "name",
+  searchQuery: "",
+  editingCarId: null,
+  draftPhotos: {front:null, back:null, wheels:null, interior:null},
+  activeSlot: null,
+  activePhotoOverlaySlot: null,
+  carViewCarId: null,
+  carViewIndex: 0,
+  pvImages: [],
+  pvIndex: 0,
+  pvReturnTo: null,        // 'car'
+  longPressTimer: null,
+  pendingUndo: null,
+  toastTimer: null,
+  qiPendingCategory: null,
+  editingCategoryId: null
+};
+
+function catById(id){ return state.categories.find(function(c){ return c.id===id; }); }
+function catByName(name){
+  var n = name.trim().toLowerCase();
+  return state.categories.find(function(c){ return c.name.trim().toLowerCase()===n; });
+}
+function carCategoryIds(car){
+  // Backward-compatible accessor: older records only had a single categoryId.
+  if(Array.isArray(car.categoryIds) && car.categoryIds.length) return car.categoryIds;
+  if(car.categoryId) return [car.categoryId];
+  return [];
+}
+function carsInCategory(id){ return state.cars.filter(function(c){ return carCategoryIds(c).indexOf(id) !== -1; }); }
+
+/* ============================================================
+   DATA LOAD / REFRESH
+   ============================================================ */
+function loadAll(){
+  return Promise.all([getAllCategories(), getAllCars()]).then(function(r){
+    state.categories = r[0].sort(function(a,b){ return (a.order||0)-(b.order||0); });
+    state.cars = r[1].sort(function(a,b){ return (b.order||0)-(a.order||0); });
+    return migrateLegacyCars();
+  });
+}
+
+/* One-time, non-destructive migration: cars saved before multi-category
+   support only had a single `categoryId`. Normalize them to `categoryIds`
+   (an array) and write the change back so future loads are consistent.
+   Existing cars and their data are never deleted here. */
+function migrateLegacyCars(){
+  var toMigrate = state.cars.filter(function(c){ return !Array.isArray(c.categoryIds) || !c.categoryIds.length; });
+  if(!toMigrate.length) return Promise.resolve();
+  toMigrate.forEach(function(c){ c.categoryIds = carCategoryIds(c); });
+  return Promise.all(toMigrate.map(function(c){ return putCar(c); })).catch(function(){ /* non-fatal */ });
+}
+
+/* ============================================================
+   RENDER: TOPBAR + COLLECTION
+   ============================================================ */
+function currentCarList(){
+  var list;
+  if(state.filter === "all") list = state.cars.slice();
+  else if(state.filter === "favourites") list = state.cars.filter(function(c){ return c.favourite; });
+  else list = state.cars.filter(function(c){ return carCategoryIds(c).indexOf(state.filter) !== -1; });
+
+  if(state.searchQuery.trim()){
+    var q = state.searchQuery.trim().toLowerCase();
+    var key = state.searchField;
+    list = list.filter(function(c){
+      var v = key==="year" ? String(c.year||"") : String(c[key]||"");
+      return v.toLowerCase().indexOf(q) !== -1;
+    });
+  }
+  return list;
+}
+
+function filterTitle(){
+  if(state.filter === "all") return "All";
+  if(state.filter === "favourites") return "Favourites";
+  var c = catById(state.filter);
+  return c ? c.name : "All";
+}
+
+function renderTopbar(){
+  document.getElementById("titleName").textContent = filterTitle();
+  var list = currentCarList();
+  document.getElementById("titleCount").textContent = list.length + " CAR" + (list.length===1?"":"S");
+}
+
+function renderCollection(){
+  renderTopbar();
+  var list = currentCarList();
+  var grid = document.getElementById("collection");
+  var empty = document.getElementById("emptyState");
+  var noRes = document.getElementById("noResults");
+
+  var totalInScope = state.filter==="all" ? state.cars.length
+    : state.filter==="favourites" ? state.cars.filter(function(c){return c.favourite;}).length
+    : carsInCategory(state.filter).length;
+
+  if(totalInScope===0 && !state.searchQuery.trim()){
+    grid.innerHTML=""; empty.classList.remove("hidden"); noRes.classList.add("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+
+  if(list.length===0){
+    grid.innerHTML=""; noRes.classList.remove("hidden");
+    return;
+  }
+  noRes.classList.add("hidden");
+
+  grid.innerHTML = list.map(cardHTML).join("");
+  Array.prototype.forEach.call(grid.querySelectorAll(".car-card"), function(el){
+    bindCardEvents(el);
+  });
+}
+
+function cardHTML(car){
+  var catIds = carCategoryIds(car);
+  var cats = catIds.map(catById).filter(Boolean);
+  var photo = firstPhoto(car);
+  var shown = cats.slice(0, 2);
+  var extra = cats.length - shown.length;
+  var catTags = "";
+  if(shown.length){
+    catTags = '<div class="ctags">' +
+      shown.map(function(cat){
+        return '<div class="ctag"><span class="dot" style="background:'+cat.color+'"></span><span>'+esc(cat.name)+'</span></div>';
+      }).join("") +
+      (extra > 0 ? '<div class="ctag ctag-more">+'+extra+'</div>' : "") +
+    '</div>';
+  }
+  var heart = car.favourite ? '<div class="heart">'+heartIcon(true)+'</div>' : "";
+  return (
+    '<div class="car-card" data-id="'+car.id+'">'+
+      '<div class="photo">'+
+        (photo ? '<img src="'+photo+'" alt="">' : '<div class="ph-icon">'+carSilhouette()+'</div>') +
+        catTags + heart +
+      '</div>'+
+      '<div class="info">'+
+        '<div class="cname">'+esc(car.name)+'</div>'+
+        '<div class="cyear">'+esc(car.year||"")+'</div>'+
+      '</div>'+
+    '</div>'
+  );
+}
+
+function bindCardEvents(el){
+  var id = el.getAttribute("data-id");
+  var pressTimer = null, moved = false, longPressed = false;
+  el.addEventListener("touchstart", function(e){
+    moved=false; longPressed=false;
+    pressTimer = setTimeout(function(){ longPressed=true; openCardContextMenu(id); }, 480);
+  }, {passive:true});
+  el.addEventListener("touchmove", function(){ moved=true; clearTimeout(pressTimer); }, {passive:true});
+  el.addEventListener("touchend", function(e){
+    clearTimeout(pressTimer);
+    if(!moved && !longPressed){ openCarDetail(id); }
+  });
+  // mouse fallback (desktop testing)
+  el.addEventListener("mousedown", function(){
+    longPressed=false;
+    pressTimer = setTimeout(function(){ longPressed=true; openCardContextMenu(id); }, 480);
+  });
+  el.addEventListener("mouseup", function(){
+    clearTimeout(pressTimer);
+    if(!longPressed) openCarDetail(id);
+  });
+  el.addEventListener("mouseleave", function(){ clearTimeout(pressTimer); });
+  el.addEventListener("contextmenu", function(e){ e.preventDefault(); openCardContextMenu(id); });
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+function openSidebar(){
+  renderSidebar();
+  document.getElementById("sidebarOverlay").classList.add("open");
+}
+function closeSidebar(){
+  document.getElementById("sidebarOverlay").classList.remove("open");
+}
+
+function renderSidebar(){
+  var favCount = state.cars.filter(function(c){return c.favourite;}).length;
+  var built = state.categories.filter(function(c){return c.builtin;});
+  var custom = state.categories.filter(function(c){return !c.builtin;});
+
+  var html = "";
+  html += sbItem("all", "All", null, state.cars.length, null);
+  built.forEach(function(c){
+    html += sbItem(c.id, c.name, c.color, carsInCategory(c.id).length, null);
+  });
+  html += '<div class="sb-label">Custom Categories</div>';
+  if(custom.length===0){
+    html += '<div style="padding:6px 8px;font-size:10.5px;color:var(--sidebar-text-faint);">None yet</div>';
+  }
+  custom.forEach(function(c){
+    html += sbItem(c.id, c.name, c.color, carsInCategory(c.id).length, "custom");
+  });
+  html += '<button class="sb-newcat" id="sbNewCatBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Category</button>';
+  html += '<div class="sb-divider"></div>';
+  html += '<button class="sb-item'+(state.filter==="favourites"?" active":"")+'" data-filter="favourites"><span class="sb-heart">'+heartIcon(state.filter==="favourites")+'</span><span class="sb-name">Favourites</span><span class="sb-count">'+favCount+'</span></button>';
+  html += '<div class="sb-divider"></div>';
+  html += '<button class="sb-item" id="sbSettingsBtn"><span class="sb-icon">'+gearIcon()+'</span><span class="sb-name">Settings</span></button>';
+
+  var container = document.getElementById("sidebarList");
+  container.innerHTML = html;
+
+  Array.prototype.forEach.call(container.querySelectorAll("[data-filter]"), function(el){
+    bindSidebarItem(el);
+  });
+  var newCat = document.getElementById("sbNewCatBtn");
+  if(newCat) newCat.addEventListener("click", function(){ openCategoryEditor(null); });
+  var settingsBtn = document.getElementById("sbSettingsBtn");
+  if(settingsBtn) settingsBtn.addEventListener("click", function(){ closeSidebar(); openSettings(); });
+}
+
+function gearIcon(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>';
+}
+
+function sbItem(id, name, color, count, kind){
+  var active = state.filter===id ? " active" : "";
+  var dot = color ? '<span class="sb-dot" style="background:'+color+'"></span>' : '<span class="sb-dot" style="background:var(--sidebar-text-faint)"></span>';
+  return '<button class="sb-item'+active+'" data-filter="'+id+'"'+(kind?' data-kind="custom"':'')+'>'+dot+
+    '<span class="sb-name">'+esc(name)+'</span><span class="sb-count">'+count+'</span></button>';
+}
+
+function bindSidebarItem(el){
+  var filterId = el.getAttribute("data-filter");
+  var isCustom = el.getAttribute("data-kind")==="custom";
+  var pressTimer=null, longPressed=false, moved=false;
+  function selectFilter(){
+    state.filter = filterId;
+    state.searchQuery="";
+    document.getElementById("searchInput").value="";
+    closeSidebar();
+    renderCollection();
+  }
+  el.addEventListener("touchstart", function(){
+    moved=false; longPressed=false;
+    if(isCustom) pressTimer=setTimeout(function(){ longPressed=true; openCategoryContextMenu(filterId); }, 480);
+  }, {passive:true});
+  el.addEventListener("touchmove", function(){ moved=true; clearTimeout(pressTimer); }, {passive:true});
+  el.addEventListener("touchend", function(){ clearTimeout(pressTimer); if(!moved && !longPressed) selectFilter(); });
+  el.addEventListener("click", function(){ if(!longPressed) selectFilter(); });
+  if(isCustom){
+    el.addEventListener("contextmenu", function(e){ e.preventDefault(); openCategoryContextMenu(filterId); });
+  }
+}
+
+document.getElementById("sidebarScrim").addEventListener("click", closeSidebar);
+document.getElementById("sidebarClose").addEventListener("click", closeSidebar);
+document.getElementById("menuBtn").addEventListener("click", openSidebar);
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+document.getElementById("searchBtn").addEventListener("click", function(){
+  state.searchOpen = !state.searchOpen;
+  document.getElementById("searchBar").classList.toggle("hidden", !state.searchOpen);
+  if(state.searchOpen) document.getElementById("searchInput").focus();
+});
+document.getElementById("searchInput").addEventListener("input", function(e){
+  state.searchQuery = e.target.value;
+  document.getElementById("searchClear").classList.toggle("hidden", !state.searchQuery);
+  renderCollection();
+});
+document.getElementById("searchClear").addEventListener("click", function(){
+  state.searchQuery=""; document.getElementById("searchInput").value="";
+  document.getElementById("searchClear").classList.add("hidden");
+  renderCollection();
+});
+document.getElementById("searchFieldBtn").addEventListener("click", function(){
+  openSearchFieldPicker();
+});
+function openSearchFieldPicker(){
+  var html = '<h3>Search By</h3><div class="modal-actions">';
+  SEARCH_FIELDS.forEach(function(f){
+    html += '<button class="ctx-menu-btn" data-field="'+f.key+'">'+f.label+(state.searchField===f.key?" ✓":"")+'</button>';
+  });
+  html += '<button class="ctx-menu-btn cancel" id="mCancel">Cancel</button></div>';
+  showModal(html, function(root){
+    Array.prototype.forEach.call(root.querySelectorAll("[data-field]"), function(b){
+      b.addEventListener("click", function(){
+        state.searchField = b.getAttribute("data-field");
+        document.getElementById("searchFieldLabel").textContent = SEARCH_FIELDS.find(function(f){return f.key===state.searchField;}).label;
+        closeModal(); renderCollection();
+      });
+    });
+    root.querySelector("#mCancel").addEventListener("click", closeModal);
+  });
+}
+
+/* ============================================================
+   MODAL SYSTEM (context menus + confirmations)
+   ============================================================ */
+function showModal(html, bindFn){
+  var overlay = document.getElementById("modalOverlay");
+  var card = document.getElementById("modalCard");
+  card.innerHTML = html;
+  overlay.classList.remove("hidden");
+  overlay.onclick = function(e){ if(e.target===overlay) closeModal(); };
+  if(bindFn) bindFn(card);
+}
+function closeModal(){
+  document.getElementById("modalOverlay").classList.add("hidden");
+}
+function confirmDialog(title, msg, confirmLabel, onConfirm, danger){
+  var html = '<h3>'+esc(title)+'</h3><p>'+esc(msg)+'</p><div class="modal-actions">'+
+    '<button class="ctx-menu-btn'+(danger?" danger":"")+'" id="dConfirm">'+esc(confirmLabel)+'</button>'+
+    '<button class="ctx-menu-btn cancel" id="dCancel">Cancel</button></div>';
+  showModal(html, function(root){
+    root.querySelector("#dConfirm").addEventListener("click", function(){ closeModal(); onConfirm(); });
+    root.querySelector("#dCancel").addEventListener("click", closeModal);
+  });
+}
+
+/* ---- car context menu ---- */
+function openCardContextMenu(carId){
+  var car = state.cars.find(function(c){return c.id===carId;});
+  if(!car) return;
+  var html = '<h3>'+esc(car.name)+'</h3><div class="modal-actions">'+
+    '<button class="ctx-menu-btn" id="ctxEdit">Edit</button>'+
+    '<button class="ctx-menu-btn" id="ctxFav">'+(car.favourite?"Unfavourite":"Favourite")+'</button>'+
+    '<button class="ctx-menu-btn danger" id="ctxDel">Delete</button>'+
+    '<button class="ctx-menu-btn cancel" id="ctxCancel">Cancel</button></div>';
+  showModal(html, function(root){
+    root.querySelector("#ctxEdit").addEventListener("click", function(){ closeModal(); openEditView(carId); });
+    root.querySelector("#ctxFav").addEventListener("click", function(){
+      closeModal(); toggleFavourite(carId);
+    });
+    root.querySelector("#ctxDel").addEventListener("click", function(){
+      closeModal();
+      confirmDialog("Delete this car?", "This car will be permanently removed from your collection.", "Delete", function(){
+        deleteCarFlow(carId);
+      }, true);
+    });
+    root.querySelector("#ctxCancel").addEventListener("click", closeModal);
+  });
+}
+
+function toggleFavourite(carId){
+  var car = state.cars.find(function(c){return c.id===carId;});
+  if(!car) return;
+  car.favourite = !car.favourite;
+  putCar(car).then(function(){ renderCollection(); if(state.carViewCarId===carId) renderCarDetail(carId); });
+}
+
+/* ---- category context menu ---- */
+function openCategoryContextMenu(catId){
+  var cat = catById(catId);
+  if(!cat) return;
+  var html = '<h3>'+esc(cat.name)+'</h3><div class="modal-actions">'+
+    '<button class="ctx-menu-btn" id="cEdit">Rename / Recolor</button>'+
+    '<button class="ctx-menu-btn danger" id="cDel">Delete</button>'+
+    '<button class="ctx-menu-btn cancel" id="cCancel">Cancel</button></div>';
+  showModal(html, function(root){
+    root.querySelector("#cEdit").addEventListener("click", function(){ closeModal(); openCategoryEditor(catId); });
+    root.querySelector("#cDel").addEventListener("click", function(){
+      closeModal();
+      confirmDialog("Delete this category?", "Cars only in this category will be removed. Cars that are also in other categories will just lose this tag.", "Delete", function(){
+        deleteCategoryFlow(catId);
+      }, true);
+    });
+    root.querySelector("#cCancel").addEventListener("click", closeModal);
+  });
+}
+
+function deleteCategoryFlow(catId){
+  var affected = carsInCategory(catId);
+  var jobs = affected.map(function(c){
+    var remaining = carCategoryIds(c).filter(function(id){ return id !== catId; });
+    if(remaining.length){
+      var updated = Object.assign({}, c, {categoryIds: remaining});
+      delete updated.categoryId;
+      return putCar(updated);
+    }
+    return deleteCarDB(c.id); // this was the car's only category — remove it, matching prior single-category behavior
+  });
+  Promise.all(jobs)
+    .then(function(){ return deleteCategoryDB(catId); })
+    .then(function(){
+      if(state.filter===catId) state.filter="all";
+      return loadAll();
+    })
+    .then(function(){ renderCollection(); renderSidebar(); });
+}
+
+/* ============================================================
+   CATEGORY EDITOR (create / rename / recolor)
+   ============================================================ */
+function openCategoryEditor(catId){
+  state.editingCategoryId = catId;
+  var cat = catId ? catById(catId) : null;
+  var name = cat ? cat.name : "";
+  var color = cat ? cat.color : CATEGORY_COLORS[2].hex;
+
+  var html = '<h3>'+(cat?"Edit Category":"New Category")+'</h3>'+
+    '<input class="field-input" id="catNameInput" placeholder="Category name" value="'+esc(name)+'" style="margin-bottom:10px;">'+
+    '<div class="color-grid" id="catColorGrid"></div>'+
+    '<div class="modal-actions" style="margin-top:14px;">'+
+    '<button class="ctx-menu-btn" id="catSave" style="background:var(--red);color:var(--on-red);">Save</button>'+
+    '<button class="ctx-menu-btn cancel" id="catCancel">Cancel</button></div>';
+
+  showModal(html, function(root){
+    var grid = root.querySelector("#catColorGrid");
+    grid.innerHTML = CATEGORY_COLORS.map(function(c){
+      return '<span class="color-swatch'+(c.hex===color?" sel":"")+'" data-hex="'+c.hex+'" style="background:'+c.hex+'"></span>';
+    }).join("");
+    var selectedHex = color;
+    Array.prototype.forEach.call(grid.querySelectorAll(".color-swatch"), function(sw){
+      sw.addEventListener("click", function(){
+        selectedHex = sw.getAttribute("data-hex");
+        Array.prototype.forEach.call(grid.querySelectorAll(".color-swatch"), function(s2){ s2.classList.remove("sel"); });
+        sw.classList.add("sel");
+      });
+    });
+    root.querySelector("#catCancel").addEventListener("click", closeModal);
+    root.querySelector("#catSave").addEventListener("click", function(){
+      var nameVal = root.querySelector("#catNameInput").value.trim();
+      if(!nameVal){ root.querySelector("#catNameInput").focus(); return; }
+      var record = cat ? Object.assign({}, cat) : {id:uid(), builtin:false, order: Date.now()};
+      record.name = nameVal; record.color = selectedHex;
+      putCategory(record).then(function(){ return loadAll(); }).then(function(){
+        closeModal(); renderSidebar(); renderCollection();
+        if(state.qiPendingCategory){
+          var cb = state.qiPendingCategory; state.qiPendingCategory=null; cb(record);
+        }
+      });
+    });
+  });
+}
+
+/* ============================================================
+   EDIT / ADD CAR VIEW
+   ============================================================ */
+function openEditView(carId){
+  state.editingCarId = carId || null;
+  var car = carId ? state.cars.find(function(c){return c.id===carId;}) : null;
+  state.draftPhotos = {
+    front: car ? car.photos.front : null,
+    back: car ? car.photos.back : null,
+    wheels: car ? car.photos.wheels : null,
+    interior: car ? car.photos.interior : null
+  };
+  var existingIds = car ? carCategoryIds(car).filter(function(id){ return !!catById(id); }) : [];
+  state.draftCategoryIds = existingIds.length ? existingIds.slice(0,4) : (state.categories[0] ? [state.categories[0].id] : []);
+  document.getElementById("editTitle").textContent = car ? "Edit Car" : "Add Car";
+  renderEditBody(car);
+  var _ev=document.getElementById("editView"); bringToFront(_ev); _ev.classList.remove("hidden");
+}
+function closeEditView(){
+  document.getElementById("editView").classList.add("hidden");
+  state.editingCarId = null;
+}
+document.getElementById("editCloseBtn").addEventListener("click", closeEditView);
+
+var QI_TEMPLATE = '"Name","Brand","Year","Exterior Color","Interior Color","Made In","Category","Packaging Type","Pack Size"';
+
+function renderEditBody(car){
+  var body = document.getElementById("editBody");
+  var packaging = car && car.packagingType ? car.packagingType : "Single";
+  var packagingOptions = ["Single","Multipack","Box"].map(function(p){
+    return '<option value="'+p+'"'+(packaging===p?" selected":"")+'>'+p+'</option>';
+  }).join("");
+
+  body.innerHTML =
+    '<div class="ph-grid" id="phGrid"></div>'+
+
+    '<div class="field-group" id="fg-name"><label class="field-label">Name</label><input class="field-input" id="f-name" value="'+esc(car?car.name:"")+'"></div>'+
+    '<div class="field-group" id="fg-brand"><label class="field-label">Brand</label><input class="field-input" id="f-brand" value="'+esc(car?car.brand:"")+'"></div>'+
+    '<div class="field-group" id="fg-year"><label class="field-label">Year</label><input class="field-input" id="f-year" inputmode="numeric" value="'+esc(car?car.year:"")+'"></div>'+
+    '<div class="field-group" id="fg-extColor"><label class="field-label">Exterior Color</label><input class="field-input" id="f-extColor" value="'+esc(car?car.extColor:"")+'"></div>'+
+    '<div class="field-group" id="fg-intColor"><label class="field-label">Interior Color</label><input class="field-input" id="f-intColor" value="'+esc(car?car.intColor:"")+'"></div>'+
+    '<div class="field-group" id="fg-madeIn"><label class="field-label">Made In</label><input class="field-input" id="f-madeIn" value="'+esc(car?car.madeIn:"")+'"></div>'+
+    '<div class="field-group" id="fg-category"><label class="field-label">Category<span class="field-label-hint">Up to 4 — shows in each</span></label><div id="categoryPicker"></div></div>'+
+    '<div class="field-group" id="fg-packagingType"><label class="field-label">Packaging Type</label><select class="field-select" id="f-packagingType">'+packagingOptions+'</select></div>'+
+    '<div class="field-group packsize-row" id="fg-packSize"><label class="field-label">Pack Size</label><input class="field-input" id="f-packSize" placeholder="e.g. 5-pack" value="'+esc(car?car.packSize:"")+'"></div>'+
+    '<div class="field-group">'+
+      '<button class="btn btn-secondary btn-block" id="f-favToggle">'+
+        heartIcon(car?car.favourite:false)+'<span style="margin-left:6px;">'+((car&&car.favourite)?"Favourited":"Add to Favourites")+'</span>'+
+      '</button>'+
+    '</div>'+
+    '<div class="field-group" id="fg-visibility"><label class="field-label">Visibility</label>'+
+      '<div class="visibility-toggle">'+
+        '<button type="button" id="f-visPrivate" class="'+((car&&car.visibility!=="friends")?"active":"")+'">Private</button>'+
+        '<button type="button" id="f-visFriends" class="'+((!car||car.visibility==="friends")?"active":"")+'">Friends</button>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="qi-box">'+
+      '<div class="qi-title"><span>Quick Import</span></div>'+
+      '<div class="qi-sub">Copy the template below, have an external AI fill it in from your dictation, then paste the finished line here.</div>'+
+      '<div class="qi-label">Template</div>'+
+      '<div class="qi-codebox"><code id="qiTemplateCode">'+esc(QI_TEMPLATE)+'</code></div>'+
+      '<div class="qi-copy-row">'+
+        '<span class="qi-copied-msg" id="qiCopiedMsg">Copied!</span>'+
+        '<button class="qi-copy-btn" id="qiCopyBtn">'+
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'+
+          'COPY TEMPLATE'+
+        '</button>'+
+      '</div>'+
+      '<div class="qi-label">Paste Completed Line</div>'+
+      '<input class="qi-input" id="qiLine" placeholder="&quot;Name&quot;,&quot;Brand&quot;,…" autocomplete="off">'+
+      '<button class="qi-fill-btn" id="qiFillBtn">Fill Fields</button>'+
+    '</div>'+
+
+    '<button class="btn btn-primary btn-block" id="editSaveBtnBottom" style="margin-top:4px;">Save Car</button>';
+
+  renderPhotoGrid();
+  renderCategoryPicker();
+
+  document.getElementById("f-favToggle").addEventListener("click", function(){
+    var pressed = this.getAttribute("data-fav")==="1";
+    this.setAttribute("data-fav", pressed?"0":"1");
+    this.innerHTML = heartIcon(!pressed)+'<span style="margin-left:6px;">'+(!pressed?"Favourited":"Add to Favourites")+'</span>';
+  });
+  document.getElementById("f-favToggle").setAttribute("data-fav", (car&&car.favourite)?"1":"0");
+
+  document.getElementById("f-visPrivate").addEventListener("click", function(){
+    document.getElementById("f-visPrivate").classList.add("active");
+    document.getElementById("f-visFriends").classList.remove("active");
+  });
+  document.getElementById("f-visFriends").addEventListener("click", function(){
+    document.getElementById("f-visFriends").classList.add("active");
+    document.getElementById("f-visPrivate").classList.remove("active");
+  });
+
+  updatePackSizeVisibility();
+  document.getElementById("f-packagingType").addEventListener("change", updatePackSizeVisibility);
+
+  document.getElementById("qiCopyBtn").addEventListener("click", copyQiTemplate);
+  document.getElementById("qiFillBtn").addEventListener("click", applyQuickImport);
+  document.getElementById("editSaveBtnBottom").addEventListener("click", saveCarHandler);
+}
+
+function updatePackSizeVisibility(){
+  var type = document.getElementById("f-packagingType").value;
+  var row = document.getElementById("fg-packSize");
+  var input = document.getElementById("f-packSize");
+  if(type === "Multipack"){
+    row.style.display = "";
+    row.style.opacity = "1";
+    input.disabled = false;
+  } else {
+    input.value = "";
+    row.style.opacity = ".45";
+    input.disabled = true;
+  }
+}
+
+function copyQiTemplate(){
+  var text = QI_TEMPLATE;
+  function showCopied(){
+    var msg = document.getElementById("qiCopiedMsg");
+    if(!msg) return;
+    msg.classList.add("show");
+    setTimeout(function(){ msg.classList.remove("show"); }, 1600);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(showCopied).catch(function(){ fallbackCopy(text, showCopied); });
+  } else {
+    fallbackCopy(text, showCopied);
+  }
+}
+function fallbackCopy(text, cb){
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand("copy"); }catch(e){}
+  document.body.removeChild(ta);
+  if(cb) cb();
+}
+
+function renderPhotoGrid(){
+  var grid = document.getElementById("phGrid");
+  grid.innerHTML = PHOTO_SLOTS.map(function(slot){
+    var img = state.draftPhotos[slot];
+    if(img){
+      return '<div class="ph-slot" data-slot="'+slot+'" data-filled="1">'+
+        '<div class="ph-label">'+PHOTO_LABELS[slot]+'</div>'+
+        '<img src="'+img+'" alt="">'+
+      '</div>';
+    }
+    return '<div class="ph-slot" data-slot="'+slot+'" data-filled="0">'+
+      '<div class="ph-label">'+PHOTO_LABELS[slot]+'</div>'+
+      '<div class="ph-empty">'+cameraIcon()+'<span>'+PHOTO_LABELS[slot]+'</span><small>Tap to open camera</small></div>'+
+    '</div>';
+  }).join("");
+
+  Array.prototype.forEach.call(grid.querySelectorAll(".ph-slot"), function(el){
+    el.addEventListener("click", function(){
+      var slot = el.getAttribute("data-slot");
+      var filled = el.getAttribute("data-filled")==="1";
+      if(filled){
+        showPhotoDeleteOverlay(slot);
+      } else {
+        state.activeSlot = slot;
+        document.getElementById("cameraInput").click();
+      }
+    });
+  });
+}
+
+function showPhotoDeleteOverlay(slot){
+  var el = document.querySelector('.ph-slot[data-slot="'+slot+'"]');
+  if(!el || el.querySelector(".ph-overlay")) return;
+  var overlay = document.createElement("div");
+  overlay.className = "ph-overlay";
+  overlay.innerHTML = '<button class="ph-del-btn">'+trashIcon()+'DELETE PHOTO</button>';
+  el.appendChild(overlay);
+  overlay.querySelector(".ph-del-btn").addEventListener("click", function(e){
+    e.stopPropagation();
+    confirmDialog("Delete this picture?", "", "Delete", function(){
+      state.draftPhotos[slot] = null;
+      renderPhotoGrid();
+    }, true);
+  });
+  overlay.addEventListener("click", function(e){
+    if(e.target===overlay){ overlay.remove(); }
+  });
+}
+
+document.getElementById("cameraInput").addEventListener("change", function(e){
+  var file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if(!file || !state.activeSlot) return;
+  compressImage(file, 900, 0.72).then(function(dataUrl){
+    state.draftPhotos[state.activeSlot] = dataUrl;
+    state.activeSlot = null;
+    renderPhotoGrid();
+  }).catch(function(){
+    state.activeSlot = null;
+  });
+});
+
+/* ---- Multi-category picker (up to 4 categories per car) ----
+   Renders one compact dropdown per selected category, each hiding
+   categories already chosen in the other rows so duplicates are
+   impossible by construction, plus a "+" row to add another (up to 4)
+   and a "×" per row (down to a minimum of 1). Kept collapsed to just
+   the rows actually in use rather than always showing all four. */
+var MAX_CAR_CATEGORIES = 4;
+
+function renderCategoryPicker(){
+  var container = document.getElementById("categoryPicker");
+  if(!container) return;
+  if(!state.draftCategoryIds || !state.draftCategoryIds.length){
+    state.draftCategoryIds = state.categories[0] ? [state.categories[0].id] : [];
+  }
+
+  var html = state.draftCategoryIds.map(function(selectedId, idx){
+    var usedElsewhere = state.draftCategoryIds.filter(function(id, i){ return i!==idx; });
+    var options = state.categories
+      .filter(function(c){ return usedElsewhere.indexOf(c.id) === -1; })
+      .map(function(c){
+        return '<option value="'+c.id+'"'+(c.id===selectedId?" selected":"")+'>'+esc(c.name)+'</option>';
+      }).join("");
+    var removeBtn = state.draftCategoryIds.length > 1
+      ? '<button type="button" class="cat-row-btn cat-row-remove" data-idx="'+idx+'" aria-label="Remove category">'+
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>'+
+        '</button>'
+      : "";
+    return '<div class="cat-row">'+
+      '<select class="field-select cat-row-select" data-idx="'+idx+'">'+options+'</select>'+
+      removeBtn+
+    '</div>';
+  }).join("");
+
+  if(state.draftCategoryIds.length < MAX_CAR_CATEGORIES){
+    html += '<button type="button" class="cat-add-btn" id="catAddRowBtn">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'+
+      'Add Another Category'+
+    '</button>';
+  }
+
+  container.innerHTML = html;
+
+  Array.prototype.forEach.call(container.querySelectorAll(".cat-row-select"), function(sel){
+    sel.addEventListener("change", function(){
+      var idx = +sel.getAttribute("data-idx");
+      state.draftCategoryIds[idx] = sel.value;
+      renderCategoryPicker();
+    });
+  });
+  Array.prototype.forEach.call(container.querySelectorAll(".cat-row-remove"), function(btn){
+    btn.addEventListener("click", function(){
+      var idx = +btn.getAttribute("data-idx");
+      state.draftCategoryIds.splice(idx, 1);
+      renderCategoryPicker();
+    });
+  });
+  var addBtn = document.getElementById("catAddRowBtn");
+  if(addBtn){
+    addBtn.addEventListener("click", function(){
+      var unused = state.categories.find(function(c){ return state.draftCategoryIds.indexOf(c.id) === -1; });
+      if(!unused) return;
+      state.draftCategoryIds.push(unused.id);
+      renderCategoryPicker();
+    });
+  }
+}
+
+/* ---- Quick Import parsing (strict, deterministic, single-line quoted CSV) ----
+   Exact expected order:
+   "Name","Brand","Year","Exterior Color","Interior Color","Made In","Category","Packaging Type","Pack Size"
+*/
+var QI_FIELD_ORDER = ["Name","Brand","Year","Exterior Color","Interior Color","Made In","Category","Packaging Type","Pack Size"];
+
+// Parses one line of strictly quoted, comma-separated values. Returns null if the
+// line does not match the required quoted-CSV shape (does not guess/repair).
+function parseQuotedCsvLine(line){
+  var vals = [];
+  var i = 0, len = line.length;
+  while(i < len){
+    // skip a single separating comma between fields (not before the first field)
+    if(vals.length > 0){
+      if(line[i] !== ",") return null;
+      i++;
+    }
+    if(line[i] !== '"') return null;
+    i++;
+    var val = "";
+    var closed = false;
+    while(i < len){
+      var ch = line[i];
+      if(ch === '"'){
+        if(line[i+1] === '"'){ val += '"'; i += 2; continue; }
+        closed = true; i++; break;
+      }
+      val += ch; i++;
+    }
+    if(!closed) return null;
+    vals.push(val);
+  }
+  if(i !== len) return null;
+  return vals;
+}
+
+function parseQuickImport(text){
+  var line = text.trim();
+  var vals = parseQuotedCsvLine(line);
+  if(!vals || vals.length !== QI_FIELD_ORDER.length) return null;
+  var fields = {};
+  QI_FIELD_ORDER.forEach(function(key, idx){ fields[key] = vals[idx].trim(); });
+  return fields;
+}
+
+function applyQuickImport(){
+  var raw = document.getElementById("qiLine").value;
+  if(!raw.trim()){ showQiError("Paste a completed Quick Import line first."); return; }
+
+  var fields = parseQuickImport(raw);
+  if(!fields){
+    showQiError('Quick Import format is invalid. Use exactly: ' + QI_TEMPLATE);
+    return;
+  }
+
+  var missing = [];
+  ["Name","Brand","Exterior Color","Interior Color","Made In","Category"].forEach(function(k){
+    if(!fields[k]) missing.push(k);
+  });
+  if(fields["Packaging Type"] && ["Single","Multipack","Box"].indexOf(fields["Packaging Type"]) === -1){
+    missing.push("Packaging Type (must be Single, Multipack, or Box)");
+  }
+  if(missing.length){
+    showQiError("Some fields are missing or invalid: " + missing.join(", "));
+    return;
+  }
+  showQiError(null);
+
+  document.getElementById("f-name").value = fields.Name;
+  document.getElementById("f-brand").value = fields.Brand;
+  document.getElementById("f-year").value = fields.Year;
+  document.getElementById("f-extColor").value = fields["Exterior Color"];
+  document.getElementById("f-intColor").value = fields["Interior Color"];
+  document.getElementById("f-madeIn").value = fields["Made In"];
+  document.getElementById("f-packagingType").value = fields["Packaging Type"] || "Single";
+  updatePackSizeVisibility();
+  if(fields["Packaging Type"] === "Multipack"){
+    document.getElementById("f-packSize").value = fields["Pack Size"] || "";
+  }
+
+  var existing = catByName(fields.Category);
+  if(existing){
+    if(!state.draftCategoryIds || !state.draftCategoryIds.length) state.draftCategoryIds = [];
+    state.draftCategoryIds[0] = existing.id;
+    renderCategoryPicker();
+  } else {
+    offerCreateCategory(fields.Category);
+  }
+}
+
+function showQiError(msg){
+  var existing = document.querySelector(".qi-error-msg");
+  if(existing) existing.remove();
+  if(!msg) return;
+  var box = document.querySelector(".qi-box");
+  var div = document.createElement("div");
+  div.className = "field-error qi-error-msg";
+  div.style.marginTop = "8px";
+  div.textContent = msg;
+  box.appendChild(div);
+}
+
+function offerCreateCategory(name){
+  var html = '<h3>Unknown Category</h3><p>"'+esc(name)+'" does not exist yet.</p><div class="modal-actions">'+
+    '<button class="ctx-menu-btn" id="qiCreateCat" style="background:var(--red);color:var(--on-red);">Create "'+esc(name)+'"</button>'+
+    '<button class="ctx-menu-btn" id="qiPickCat">Choose Existing Category</button>'+
+    '<button class="ctx-menu-btn cancel" id="qiSkip">Skip</button></div>';
+  showModal(html, function(root){
+    root.querySelector("#qiCreateCat").addEventListener("click", function(){
+      closeModal();
+      var record = {id:uid(), name:name, color:CATEGORY_COLORS[2].hex, builtin:false, order:Date.now()};
+      putCategory(record).then(function(){ return loadAll(); }).then(function(){
+        renderSidebar();
+        if(!state.draftCategoryIds || !state.draftCategoryIds.length) state.draftCategoryIds = [];
+        state.draftCategoryIds[0] = record.id;
+        renderCategoryPicker();
+      });
+    });
+    root.querySelector("#qiPickCat").addEventListener("click", function(){
+      closeModal();
+      var firstSelect = document.querySelector(".cat-row-select");
+      if(firstSelect) firstSelect.focus();
+    });
+    root.querySelector("#qiSkip").addEventListener("click", closeModal);
+  });
+}
+
+/* ---- Save car ---- */
+function clearFieldErrors(){
+  Array.prototype.forEach.call(document.querySelectorAll(".field-group"), function(g){
+    g.classList.remove("err");
+    var e = g.querySelector(".field-error"); if(e) e.remove();
+  });
+}
+function fieldError(id, msg){
+  var g = document.getElementById("fg-"+id);
+  if(!g) return;
+  g.classList.add("err");
+  var div = document.createElement("div");
+  div.className="field-error"; div.textContent = msg;
+  g.appendChild(div);
+}
+
+function saveCarHandler(){
+  clearFieldErrors();
+  var name = document.getElementById("f-name").value.trim();
+  var brand = document.getElementById("f-brand").value.trim();
+  var year = document.getElementById("f-year").value.trim();
+  var extColor = document.getElementById("f-extColor").value.trim();
+  var intColor = document.getElementById("f-intColor").value.trim();
+  var madeIn = document.getElementById("f-madeIn").value.trim();
+  var categoryIds = (state.draftCategoryIds || []).filter(function(id, i, arr){
+    return id && catById(id) && arr.indexOf(id) === i; // valid + de-duplicated
+  }).slice(0, MAX_CAR_CATEGORIES);
+  var packagingType = document.getElementById("f-packagingType").value;
+  var packSize = document.getElementById("f-packSize").value.trim();
+  var favourite = document.getElementById("f-favToggle").getAttribute("data-fav")==="1";
+  var visibility = document.getElementById("f-visFriends").classList.contains("active") ? "friends" : "private";
+
+  var ok = true;
+  if(!name){ fieldError("name","Name is required."); ok=false; }
+  if(year && (!/^\d{4}$/.test(year) || +year < 1885 || +year > 2100)){ fieldError("year","Enter a valid year."); ok=false; }
+  if(!extColor){ fieldError("extColor","Exterior color is required."); ok=false; }
+  if(!intColor){ fieldError("intColor","Interior color is required."); ok=false; }
+  if(!madeIn){ fieldError("madeIn","Made in is required."); ok=false; }
+  if(!categoryIds.length){ fieldError("category","Select at least one category."); ok=false; }
+  if(packagingType === "Multipack" && !packSize){ fieldError("packSize","Enter a pack size (e.g. 5-pack)."); ok=false; }
+  if(packagingType !== "Multipack"){ packSize = ""; }
+  if(!ok) return;
+
+  var isEdit = !!state.editingCarId;
+  var car = isEdit ? Object.assign({}, state.cars.find(function(c){return c.id===state.editingCarId;})) : {
+    id: uid(), createdAt: Date.now(), order: Date.now()
+  };
+  car.name=name; car.brand=brand; car.year=year; car.extColor=extColor; car.intColor=intColor;
+  car.madeIn=madeIn; car.categoryIds=categoryIds; car.favourite=favourite; car.visibility=visibility;
+  delete car.categoryId; // superseded by categoryIds; avoid stale single-category leftovers
+  car.packagingType=packagingType; car.packSize=packSize;
+  car.photos = {
+    front: state.draftPhotos.front, back: state.draftPhotos.back,
+    wheels: state.draftPhotos.wheels, interior: state.draftPhotos.interior
+  };
+
+  function doSave(){
+    putCar(car).then(function(){ return loadAll(); }).then(function(){
+      closeEditView();
+      renderCollection(); renderSidebar();
+      if(isEdit && state.carViewCarId===car.id) renderCarDetail(car.id);
+    });
+  }
+
+  // A warning, never a block: collectors legitimately own several versions of the
+  // same model (e.g. a red, a blue and a black SF90). Only checked for new cars.
+  if(!isEdit){
+    var dups = findPossibleDuplicates(name, brand);
+    if(dups.length){
+      var label = (brand && name.toLowerCase().indexOf(brand.toLowerCase()) !== 0) ? brand+" "+name : name;
+      var dupMsg = dups.length === 1
+        ? 'You already have a "'+label+'" in your vault. Are you sure this isn\'t the same car?'
+        : 'You already have '+dups.length+' cars like "'+label+'" in your vault. Are you sure this isn\'t the same car?';
+      confirmDialog("Possible Duplicate", dupMsg, "No, this isn't a duplicate", doSave, false);
+      return;
+    }
+  }
+  doSave();
+}
+
+function normalizeCarText(s){
+  return String(s||"").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+}
+function findPossibleDuplicates(name, brand){
+  var n = normalizeCarText(name), b = normalizeCarText(brand);
+  if(!n) return [];
+  var combined = normalizeCarText((brand ? brand+" " : "")+name);
+  return state.cars.filter(function(c){
+    var cn = normalizeCarText(c.name), cb = normalizeCarText(c.brand);
+    if(cn === n && (!b || !cb || b === cb)) return true;
+    return normalizeCarText((c.brand ? c.brand+" " : "")+c.name) === combined;
+  });
+}
+document.getElementById("editSaveBtn").addEventListener("click", saveCarHandler);
+
+/* ============================================================
+   CAR DETAIL VIEW (expanded)
+   ============================================================ */
+function openCarDetail(carId){
+  state.carViewCarId = carId;
+  state.carViewIndex = 0;
+  renderCarDetail(carId);
+  var _cv=document.getElementById("carView"); bringToFront(_cv); _cv.classList.remove("hidden");
+}
+function closeCarDetail(){
+  document.getElementById("carView").classList.add("hidden");
+  state.carViewCarId = null;
+}
+document.getElementById("carCloseBtn").addEventListener("click", closeCarDetail);
+document.getElementById("carEditBtn").addEventListener("click", function(){
+  if(state.carViewCarId) openEditView(state.carViewCarId);
+});
+
+function renderCarDetail(carId){
+  var car = state.cars.find(function(c){return c.id===carId;});
+  if(!car) return;
+  document.getElementById("carViewTitle").textContent = car.name;
+  var cats = carCategoryIds(car).map(catById).filter(Boolean);
+  var images = existingPhotoList(car);
+  var idx = state.carViewIndex % (images.length||1);
+
+  var imgHTML;
+  if(images.length){
+    imgHTML =
+      '<img id="cvImg" src="'+images[idx]+'" alt="">'+
+      '<div class="cv-navzone l" id="cvPrev"></div>'+
+      '<div class="cv-navzone r" id="cvNext"></div>'+
+      (images.length>1 ? '<div class="cv-dots">'+images.map(function(_,i){return '<span class="'+(i===idx?"on":"")+'"></span>';}).join("")+'</div>' : "");
+  } else {
+    imgHTML = '<div class="ph-icon">'+carSilhouette()+'</div>';
+  }
+
+  var tagsHTML = cats.length
+    ? '<div class="cv-tags">'+cats.map(function(cat){
+        return '<div class="cv-tag"><span class="dot" style="background:'+cat.color+'"></span>'+esc(cat.name)+'</div>';
+      }).join("")+'</div>'
+    : '<div style="height:8px"></div>';
+
+  var body = document.getElementById("carViewBody");
+  body.innerHTML =
+    '<div class="cv-imgwrap" id="cvImgWrap">'+
+      imgHTML +
+      '<div class="cv-heart" id="cvHeartBtn">'+heartIcon(car.favourite)+'</div>'+
+    '</div>'+
+    '<div class="cv-name">'+esc(car.name)+'</div>'+
+    '<div class="cv-year">'+esc(car.year||"")+'</div>'+
+    tagsHTML+
+    '<div class="cv-fields">'+
+      (car.brand ? cvField("Brand", car.brand) : "")+
+      cvField("Exterior Color", car.extColor)+
+      cvField("Interior Color", car.intColor)+
+      cvField("Made In", car.madeIn)+
+      (car.packagingType ? cvField("Packaging", car.packagingType === "Multipack" && car.packSize ? "Multipack ("+car.packSize+")" : car.packagingType) : "")+
+    '</div>'+
+    '<div class="cv-actions">'+
+      '<button class="btn btn-secondary" id="cvEditBtn2">Edit</button>'+
+      '<button class="btn btn-danger" id="cvDelBtn">Delete</button>'+
+    '</div>';
+
+  if(images.length){
+    document.getElementById("cvImgWrap").addEventListener("click", function(e){
+      if(e.target.closest("#cvHeartBtn")) return;
+      if(e.target.closest("#cvPrev") || e.target.closest("#cvNext")) return;
+      openPhotoViewer(images, idx, "car");
+    });
+    var prevBtn = document.getElementById("cvPrev"), nextBtn = document.getElementById("cvNext");
+    if(prevBtn) prevBtn.addEventListener("click", function(e){ e.stopPropagation(); state.carViewIndex = (idx-1+images.length)%images.length; renderCarDetail(carId); });
+    if(nextBtn) nextBtn.addEventListener("click", function(e){ e.stopPropagation(); state.carViewIndex = (idx+1)%images.length; renderCarDetail(carId); });
+    bindSwipe(document.getElementById("cvImgWrap"), function(dir){
+      state.carViewIndex = dir>0 ? (idx+1)%images.length : (idx-1+images.length)%images.length;
+      renderCarDetail(carId);
+    });
+  }
+
+  document.getElementById("cvHeartBtn").addEventListener("click", function(e){
+    e.stopPropagation(); toggleFavourite(carId);
+  });
+  document.getElementById("cvEditBtn2").addEventListener("click", function(){ openEditView(carId); });
+  document.getElementById("cvDelBtn").addEventListener("click", function(){
+    confirmDialog("Delete this car?", "This car will be permanently removed from your collection.", "Delete", function(){
+      closeCarDetail(); deleteCarFlow(carId);
+    }, true);
+  });
+}
+function cvField(k,v){
+  return '<div class="cv-field"><span class="k">'+esc(k)+'</span><span class="v">'+esc(v||"—")+'</span></div>';
+}
+
+/* swipe gesture helper */
+function bindSwipe(el, cb){
+  var sx=0, sy=0, tracking=false;
+  el.addEventListener("touchstart", function(e){
+    if(e.touches.length!==1) return;
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY; tracking=true;
+  }, {passive:true});
+  el.addEventListener("touchend", function(e){
+    if(!tracking) return; tracking=false;
+    var ex=e.changedTouches[0].clientX, ey=e.changedTouches[0].clientY;
+    var dx=ex-sx, dy=ey-sy;
+    if(Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)){
+      cb(dx<0 ? 1 : -1);
+    }
+  }, {passive:true});
+}
+
+/* ============================================================
+   FULL SCREEN PHOTO VIEWER
+   ============================================================ */
+function openPhotoViewer(images, startIdx){
+  state.pvImages = images;
+  state.pvIndex = startIdx || 0;
+  renderPV();
+  document.getElementById("photoViewer").classList.remove("hidden");
+}
+function closePhotoViewer(){
+  document.getElementById("photoViewer").classList.add("hidden");
+}
+function renderPV(){
+  var img = document.getElementById("pvImg");
+  img.src = state.pvImages[state.pvIndex];
+  var dots = document.getElementById("pvDots");
+  if(state.pvImages.length>1){
+    dots.innerHTML = state.pvImages.map(function(_,i){ return '<span class="'+(i===state.pvIndex?"on":"")+'"></span>'; }).join("");
+  } else dots.innerHTML="";
+}
+document.getElementById("pvCloseBtn").addEventListener("click", closePhotoViewer);
+document.getElementById("pvPrev").addEventListener("click", function(){
+  state.pvIndex = (state.pvIndex-1+state.pvImages.length)%state.pvImages.length; renderPV();
+});
+document.getElementById("pvNext").addEventListener("click", function(){
+  state.pvIndex = (state.pvIndex+1)%state.pvImages.length; renderPV();
+});
+bindSwipe(document.getElementById("pvStage"), function(dir){
+  state.pvIndex = dir>0 ? (state.pvIndex+1)%state.pvImages.length : (state.pvIndex-1+state.pvImages.length)%state.pvImages.length;
+  renderPV();
+});
+
+/* ============================================================
+   DELETE CAR + UNDO
+   ============================================================ */
+function deleteCarFlow(carId){
+  var car = state.cars.find(function(c){return c.id===carId;});
+  if(!car) return;
+  var idx = state.cars.indexOf(car);
+  deleteCarDB(carId).then(function(){ return loadAll(); }).then(function(){
+    renderCollection(); renderSidebar();
+    showUndoToast("Car deleted", function(){
+      putCar(car).then(function(){ return loadAll(); }).then(function(){ renderCollection(); renderSidebar(); });
+    });
+  });
+}
+
+function showUndoToast(msg, onUndo){
+  clearTimeout(state.toastTimer);
+  var toast = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  var undoBtn = document.getElementById("toastUndo");
+  undoBtn.classList.remove("hidden");
+  toast.classList.remove("hidden");
+  var used = false;
+  undoBtn.onclick = function(){
+    if(used) return; used=true;
+    clearTimeout(state.toastTimer);
+    toast.classList.add("hidden");
+    onUndo();
+  };
+  state.toastTimer = setTimeout(function(){
+    toast.classList.add("hidden");
+  }, 5000);
+}
+function showToast(msg){
+  clearTimeout(state.toastTimer);
+  var toast = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  document.getElementById("toastUndo").classList.add("hidden");
+  toast.classList.remove("hidden");
+  state.toastTimer = setTimeout(function(){ toast.classList.add("hidden"); }, 2600);
+}
+
+/* ============================================================
+   SETTINGS: EXPORT / IMPORT / RESET
+   ============================================================ */
+function openSettings(){ renderSettings(); var _sv=document.getElementById("settingsView"); bringToFront(_sv); _sv.classList.remove("hidden"); }
+function closeSettings(){ document.getElementById("settingsView").classList.add("hidden"); }
+document.getElementById("settingsCloseBtn").addEventListener("click", closeSettings);
+
+function renderSettings(){
+  var body = document.getElementById("settingsBody");
+  var prof = window.DVAuth && window.DVAuth.profile;
+  var accountHtml = "";
+  if(prof){
+    accountHtml =
+      '<div class="settings-section">'+
+        '<div class="settings-row"><div><div class="lbl">'+esc(prof.first_name)+" "+esc(prof.last_name)+'</div><div class="sub">@'+esc(prof.username)+'</div></div></div>'+
+        '<div class="settings-row"><div><div class="lbl">Log Out</div><div class="sub">Sign out of this device</div></div><button id="stLogout">Log Out</button></div>'+
+        '<div class="settings-row"><div><div class="lbl">Delete Account</div><div class="sub">Permanently erase your vault</div></div><button class="danger" id="stDeleteAccount">Delete</button></div>'+
+      '</div>';
+  }
+  var curTheme = getCurrentThemeKey();
+  var themeHtml =
+    '<div class="settings-section">'+
+      '<div class="theme-settings-row" id="themeSettingsRow">'+
+        '<div><div class="lbl">Theme</div><div class="sub">'+THEMES[curTheme].name+'</div></div>'+
+        '<div class="theme-current-dot" style="background:'+THEMES[curTheme].bg+';"></div>'+
+      '</div>'+
+    '</div>';
+
+  body.innerHTML = accountHtml + themeHtml +
+    '<div class="settings-section">'+
+      '<div class="settings-row"><div><div class="lbl">Export Collection</div><div class="sub">Download a full JSON backup</div></div><button id="stExport">Export</button></div>'+
+      '<div class="settings-row"><div><div class="lbl">Import Collection</div><div class="sub">Restore from a backup file</div></div><button id="stImport">Import</button></div>'+
+      '<div class="settings-row"><div><div class="lbl">Reset Collection</div><div class="sub">Erase everything</div></div><button class="danger" id="stReset">Reset</button></div>'+
+    '</div>'+
+    '<div class="settings-section" id="storageInfo"></div>'+
+    '<button type="button" class="settings-link-row" id="stUpdateLog"><span>Update Log</span><span>v'+APP_VERSION+' ›</span></button>'+
+    '<div class="app-info">Diecast Vault<br>Version '+APP_VERSION+'<br>'+state.cars.length+' '+(state.cars.length===1?'car':'cars')+' in your vault · synced to your account</div>';
+
+  document.getElementById("stUpdateLog").addEventListener("click", openUpdateLog);
+  document.getElementById("themeSettingsRow").addEventListener("click", function(){
+    openThemePicker();
+  });
+
+  if(document.getElementById("stLogout")){
+    document.getElementById("stLogout").addEventListener("click", function(){
+      confirmDialog("Log out?", "You can sign back in any time on this or another device.", "Log Out", function(){
+        window.DVAuth.signOut();
+      });
+    });
+  }
+  if(document.getElementById("stDeleteAccount")){
+    document.getElementById("stDeleteAccount").addEventListener("click", function(){
+      confirmDialog("Delete your account?", "This permanently deletes your profile and vault data. This cannot be undone.", "Continue", function(){
+        confirmDialog("Are you absolutely sure?", "Your account and collection will be permanently erased.", "Delete Account", function(){
+          window.DVAuth.deleteAccount().catch(function(err){ showToast(err.message || "Could not delete account."); });
+        }, true);
+      }, true);
+    });
+  }
+  document.getElementById("stExport").addEventListener("click", exportCollection);
+  document.getElementById("stImport").addEventListener("click", function(){ document.getElementById("importInput").click(); });
+  document.getElementById("stReset").addEventListener("click", function(){
+    confirmDialog("Delete entire collection?", "This will permanently delete all cars, categories, photos and collection data.", "Continue", function(){
+      confirmDialog("Are you absolutely sure?", "This action cannot be undone.", "Delete Everything", function(){
+        resetCollection();
+      }, true);
+    }, true);
+  });
+
+  renderStorageInfo();
+}
+
+function renderStorageInfo(){
+  var el = document.getElementById("storageInfo");
+  if(navigator.storage && navigator.storage.estimate){
+    navigator.storage.estimate().then(function(est){
+      var mb = est.usage ? (est.usage/1048576).toFixed(1) : "—";
+      el.innerHTML = '<div class="settings-row"><div><div class="lbl">Device Cache</div><div class="sub">App files saved on this device — your cars live in the cloud</div></div><div style="font-size:12px;font-weight:700;">'+mb+' MB</div></div>';
+    }).catch(function(){});
+  }
+}
+
+function exportCollection(){
+  var payload = {
+    appVersion: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    categories: state.categories,
+    cars: state.cars
+  };
+  var blob = new Blob([JSON.stringify(payload)], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = "diecast-vault-backup-"+Date.now()+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  showToast("Backup downloaded");
+}
+
+document.getElementById("importInput").addEventListener("change", function(e){
+  var file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    var data;
+    try{ data = JSON.parse(reader.result); }
+    catch(err){ showToast("Invalid backup file"); return; }
+    if(!data || !Array.isArray(data.categories) || !Array.isArray(data.cars)){
+      showToast("Backup file is corrupt or invalid"); return;
+    }
+    confirmDialog("Import collection?", "This may replace or merge your current collection.", "Import", function(){
+      importCollection(data);
+    });
+  };
+  reader.onerror = function(){ showToast("Could not read file"); };
+  reader.readAsText(file);
+});
+
+function importCollection(data){
+  Promise.all([clearStore("categories"), clearStore("cars")])
+    .then(function(){
+      // Categories must be fully written first — cars link to them via a
+      // foreign key, so importing both in parallel can fail if a car's
+      // category row hasn't been created yet.
+      var catJobs = data.categories.map(function(c){ return putCategory(c); });
+      return Promise.all(catJobs);
+    })
+    .then(function(){
+      var carJobs = data.cars.map(function(c){ return putCar(c); });
+      return Promise.all(carJobs);
+    })
+    .then(ensureBuiltins)
+    .then(loadAll)
+    .then(function(){
+      state.filter="all";
+      renderCollection(); renderSidebar(); renderSettings();
+      showToast("Collection imported");
+    })
+    .catch(function(err){
+      console.error("Import failed", err);
+      showToast("Import failed: " + (err && err.message ? err.message : "please try again."));
+    });
+}
+
+function resetCollection(){
+  Promise.all([clearStore("categories"), clearStore("cars")])
+    .then(ensureBuiltins)
+    .then(loadAll)
+    .then(function(){
+      state.filter="all";
+      closeSettings();
+      renderCollection(); renderSidebar();
+      showToast("Collection reset");
+    });
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+document.getElementById("fabAdd").addEventListener("click", function(){ openEditView(null); });
+document.getElementById("emptyAddBtn").addEventListener("click", function(){ openEditView(null); });
+
+/* ============================================================
+   SERVICE WORKER (optional PWA, non-blocking)
+   ============================================================ */
+if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
+  // When a newer service worker takes over, reload so the page itself is the new
+  // version too. The very first install also fires controllerchange — ignore that one.
+  var swHadController = !!navigator.serviceWorker.controller;
+  var swReloading = false;
+
+  // Don't yank the page out from under someone who's mid-edit: wait until the
+  // add/edit form is closed, then reload.
+  function applyUpdateWhenIdle(){
+    function idle(){
+      var ev = document.getElementById("editView");
+      return !ev || ev.classList.contains("hidden");
+    }
+    if(idle()){
+      showToast("Updating to the latest version…");
+      setTimeout(function(){ location.reload(); }, 700);
+      return;
+    }
+    showToast("Update ready — it will apply when you finish editing.");
+    var t = setInterval(function(){
+      if(idle()){ clearInterval(t); location.reload(); }
+    }, 1500);
+  }
+
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    if(!swHadController){ swHadController = true; return; }
+    if(swReloading) return;
+    swReloading = true;
+    applyUpdateWhenIdle();
+  });
+
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      // Installed PWAs can stay open for days, so keep checking for a new version.
+      function checkForUpdate(){ reg.update().catch(function(){}); }
+      document.addEventListener("visibilitychange", function(){ if(!document.hidden) checkForUpdate(); });
+      setInterval(checkForUpdate, 30*60*1000);
+    }).catch(function(){ /* ignore */ });
+  });
+}
+
+/* ============================================================
+   GLOBAL SAFETY NET
+   Surface unexpected errors instead of leaving buttons that
+   silently appear to do nothing.
+   ============================================================ */
+window.addEventListener("error", function(e){
+  console.error("Unhandled error", e.error || e.message);
+});
+window.addEventListener("unhandledrejection", function(e){
+  console.error("Unhandled promise rejection", e.reason);
+});
+
+/* ============================================================
+   BOTTOM NAV / SCREEN SWITCHING
+   ============================================================ */
+function switchScreen(name){
+  document.querySelectorAll(".app-screen").forEach(function(el){ el.classList.toggle("active", el.id===name); });
+  document.querySelectorAll(".nav-item").forEach(function(el){ el.classList.toggle("active", el.getAttribute("data-screen")===name); });
+  if(name === "friendsScreen") renderFriendsScreen();
+  if(name === "profileScreen") renderProfileScreen();
+  if(name === "adminScreen") renderAdminScreen();
+  if(name === "leaderboardScreen") renderLeaderboardScreen();
+}
+document.getElementById("navVault").addEventListener("click", function(){ switchScreen("vaultScreen"); });
+document.getElementById("navFriends").addEventListener("click", function(){ switchScreen("friendsScreen"); });
+document.getElementById("navLeaderboard").addEventListener("click", function(){ switchScreen("leaderboardScreen"); });
+document.getElementById("navProfile").addEventListener("click", function(){ switchScreen("profileScreen"); });
+document.getElementById("navAdmin").addEventListener("click", function(){ switchScreen("adminScreen"); });
+document.getElementById("profileSettingsBtn").addEventListener("click", openSettings);
+
+function avatarImgHtml(path){
+  var url = path ? window.DVAuth.avatarUrl(path) : null;
+  var icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>';
+  return url ? '<img src="'+url+'" alt="">' : icon;
+}
+
+/* ============================================================
+   FRIENDS — DATA LAYER
+   ============================================================ */
+function fetchIncomingRequests(){
+  return sbc().from("friend_requests").select("id, sender_id, created_at, profiles!friend_requests_sender_id_fkey(id,username,first_name,last_name,avatar_path)")
+    .eq("recipient_id", myUid()).eq("status","pending").order("created_at",{ascending:false})
+    .then(function(res){ if(res.error) throw res.error; return res.data || []; });
+}
+function fetchFriendsList(){
+  return sbc().from("friendships").select("id, user_a, user_b").or("user_a.eq."+myUid()+",user_b.eq."+myUid())
+    .then(function(res){
+      if(res.error) throw res.error;
+      var rows = res.data || [];
+      var otherIds = rows.map(function(r){ return r.user_a === myUid() ? r.user_b : r.user_a; });
+      if(!otherIds.length) return [];
+      return sbc().from("profiles").select("id,username,first_name,last_name,avatar_path").in("id", otherIds)
+        .then(function(res2){
+          if(res2.error) throw res2.error;
+          return res2.data || [];
+        });
+    });
+}
+function searchUsersByUsername(q){
+  q = q.trim().replace(/^@/, "");
+  if(!q) return Promise.resolve([]);
+  return sbc().from("profiles").select("id,username,first_name,last_name,avatar_path")
+    .ilike("username_lower", "%"+q.toLowerCase()+"%").neq("id", myUid()).limit(15)
+    .then(function(res){ if(res.error) throw res.error; return res.data || []; });
+}
+function sendFriendRequest(targetId){
+  return sbc().from("friend_requests").insert({ sender_id: myUid(), recipient_id: targetId }).select("id").single().then(function(res){
+    if(res.error){
+      if(res.error.code === "23505") throw new Error("Request already sent.");
+      throw new Error("Could not send request — they may have blocked you, or you're already friends.");
+    }
+    // Admins (and accounts flagged auto-accept) accept instantly — the database does
+    // that — so check what actually happened rather than assuming it's pending.
+    return sbc().from("friend_requests").select("status").eq("id", res.data.id).single().then(function(r2){
+      return (r2.data && r2.data.status) || "pending";
+    });
+  });
+}
+function acceptFriendRequest(reqId){
+  return sbc().rpc("accept_friend_request", { request_id: reqId }).then(function(res){ if(res.error) throw res.error; });
+}
+function declineFriendRequest(reqId){
+  return sbc().from("friend_requests").delete().eq("id", reqId).then(function(res){ if(res.error) throw res.error; });
+}
+function removeFriendship(otherId){
+  return sbc().from("friendships").delete().or(
+    "and(user_a.eq."+myUid()+",user_b.eq."+otherId+"),and(user_a.eq."+otherId+",user_b.eq."+myUid()+")"
+  ).then(function(res){ if(res.error) throw res.error; });
+}
+function blockUserById(targetId){
+  return sbc().rpc("block_user", { target: targetId }).then(function(res){ if(res.error) throw res.error; });
+}
+
+/* ============================================================
+   FRIENDS — SCREEN
+   ============================================================ */
+function friendPersonRow(p, actionsHtml, cardClass){
+  return '<div class="'+(cardClass||"friend-card")+'" data-uid="'+p.id+'">'+
+    '<div class="friend-avatar">'+avatarImgHtml(p.avatar_path)+'</div>'+
+    '<div class="friend-info"><div class="friend-name">'+esc(p.first_name)+' '+esc(p.last_name)+'</div><div class="friend-sub">@'+esc(p.username)+'</div></div>'+
+    '<div class="friend-actions">'+actionsHtml+'</div>'+
+  '</div>';
+}
+
+function renderFriendsScreen(){
+  var badge = document.getElementById("friendsBadge");
+  document.getElementById("friendSearchResults").innerHTML = "";
+  document.getElementById("friendRequestsSection").innerHTML = '<div class="friends-section-title">Friend Requests</div><div class="friends-empty">Loading…</div>';
+  document.getElementById("friendsListSection").innerHTML = '<div class="friends-section-title">My Friends</div><div class="friends-empty">Loading…</div>';
+
+  fetchIncomingRequests().then(function(reqs){
+    var section = document.getElementById("friendRequestsSection");
+    if(!reqs.length){ section.innerHTML = ""; }
+    else{
+      section.innerHTML = '<div class="friends-section-title">Friend Requests</div>' +
+        reqs.map(function(r){
+          var p = r.profiles;
+          return friendPersonRow(p,
+            '<button data-accept="'+r.id+'">Accept</button>'+
+            '<button class="secondary" data-decline="'+r.id+'">Decline</button>',
+            "request-card"
+          );
+        }).join("");
+      section.querySelectorAll("[data-accept]").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          acceptFriendRequest(btn.getAttribute("data-accept")).then(function(){
+            showToast("Friend request accepted."); renderFriendsScreen();
+          }).catch(function(err){ showToast(err.message || "Could not accept request."); });
+        });
+      });
+      section.querySelectorAll("[data-decline]").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          declineFriendRequest(btn.getAttribute("data-decline")).then(function(){ renderFriendsScreen(); })
+            .catch(function(err){ showToast(err.message || "Could not decline request."); });
+        });
+      });
+    }
+    if(badge) badge.classList.toggle("hidden", reqs.length === 0);
+  }).catch(function(err){
+    document.getElementById("friendRequestsSection").innerHTML = "";
+    console.error(err);
+  });
+
+  fetchFriendsList().then(function(friends){
+    var section = document.getElementById("friendsListSection");
+    if(!friends.length){
+      section.innerHTML = '<div class="friends-section-title">My Friends</div><div class="friends-empty">No friends yet — search a username above to add one.</div>';
+      return;
+    }
+    section.innerHTML = '<div class="friends-section-title">My Friends</div>' +
+      friends.map(function(p){
+        return friendPersonRow(p, '<button class="secondary" data-open="'+p.id+'">View</button>');
+      }).join("");
+    section.querySelectorAll("[data-open]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var uid2 = btn.getAttribute("data-open");
+        var p = friends.find(function(f){ return f.id === uid2; });
+        openFriendVault(p);
+      });
+    });
+  }).catch(function(err){
+    document.getElementById("friendsListSection").innerHTML = "";
+    console.error(err);
+  });
+}
+
+function refreshFriendsBadge(){
+  fetchIncomingRequests().then(function(reqs){
+    var badge = document.getElementById("friendsBadge");
+    if(badge) badge.classList.toggle("hidden", reqs.length === 0);
+  }).catch(function(){});
+}
+
+document.getElementById("friendSearchBtn").addEventListener("click", runFriendSearch);
+document.getElementById("friendSearchInput").addEventListener("keydown", function(e){ if(e.key === "Enter") runFriendSearch(); });
+function runFriendSearch(){
+  var q = document.getElementById("friendSearchInput").value;
+  var box = document.getElementById("friendSearchResults");
+  if(!q.trim()){ box.innerHTML = ""; return; }
+  box.innerHTML = '<div class="friends-empty">Searching…</div>';
+  searchUsersByUsername(q).then(function(results){
+    if(!results.length){ box.innerHTML = '<div class="friends-empty">No users found.</div>'; return; }
+    box.innerHTML = results.map(function(p){
+      return friendPersonRow(p, '<button data-add="'+p.id+'">Add Friend</button>', "search-result-card");
+    }).join("");
+    box.querySelectorAll("[data-add]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        sendFriendRequest(btn.getAttribute("data-add")).then(function(status){
+          if(status === "accepted"){
+            showToast("You're now friends.");
+            renderFriendsScreen();
+          } else {
+            showToast("Friend request sent."); btn.textContent = "Sent"; btn.disabled = true;
+          }
+        }).catch(function(err){ showToast(err.message || "Could not send request."); });
+      });
+    });
+  }).catch(function(){ box.innerHTML = '<div class="friends-empty">Search failed. Try again.</div>'; });
+}
+
+/* ---- friend's vault (read-only) ---- */
+var friendVaultState = { profile: null, cars: [], search: "", filter: "all" };
+
+function fetchFriendVaultCars(friendId){
+  return sbc().from("cars").select("*, car_categories(category_id, categories(id, name))").eq("owner_id", friendId).order("created_at",{ascending:false})
+    .then(function(res){
+      if(res.error) throw res.error;
+      var rows = res.data || [];
+      var pathMeta = [];
+      rows.forEach(function(r){
+        PHOTO_SLOTS.forEach(function(slot){
+          if(r.photos && r.photos[slot]) pathMeta.push({carId:r.id, slot:slot, path:friendId+"/"+r.id+"/"+slot+".jpg"});
+        });
+      });
+      return signedUrlsForPaths(pathMeta.map(function(m){return m.path;})).then(function(urlMap){
+        return rows.map(function(r){
+          var photos = {};
+          pathMeta.filter(function(m){return m.carId===r.id;}).forEach(function(m){ photos[m.slot] = urlMap[m.path] || null; });
+          return {
+            id:r.id, name:r.name, brand:r.brand, year:r.year,
+            extColor:r.ext_color, intColor:r.int_color, madeIn:r.made_in,
+            packagingType:r.packaging_type, packSize:r.pack_size,
+            favourite:r.favorite, photos:photos,
+            categories:(r.car_categories||[]).map(function(cc){ return cc.categories; }).filter(Boolean)
+          };
+        });
+      });
+    });
+}
+
+function openFriendVault(profile){
+  friendVaultState = { profile: profile, cars: [], search: "", filter: "all" };
+  document.getElementById("friendVaultTitle").textContent = profile.first_name + "'s Vault";
+  document.getElementById("friendVaultSearch").value = "";
+  document.getElementById("friendVaultControls").classList.add("hidden");
+  document.getElementById("friendVaultBody").innerHTML = '<div class="friends-empty">Loading…</div>';
+  var _fvv=document.getElementById("friendVaultView"); bringToFront(_fvv); _fvv.classList.remove("hidden");
+  fetchFriendVaultCars(profile.id).then(function(cars){
+    friendVaultState.cars = cars;
+    populateFriendVaultFilter();
+    renderFriendVault();
+  }).catch(function(){
+    document.getElementById("friendVaultBody").innerHTML = '<div class="friends-empty">Could not load this vault.</div>';
+  });
+}
+
+// Category list for the filter, built from the categories on the cars this person can see.
+function populateFriendVaultFilter(){
+  var cars = friendVaultState.cars;
+  var map = {};
+  cars.forEach(function(c){
+    (c.categories||[]).forEach(function(cat){
+      if(!map[cat.id]) map[cat.id] = { id: cat.id, name: cat.name, count: 0 };
+      map[cat.id].count++;
+    });
+  });
+  var cats = Object.keys(map).map(function(k){ return map[k]; }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+  var favs = cars.filter(function(c){ return c.favourite; }).length;
+  var opts = '<option value="all">All cars ('+cars.length+')</option>';
+  if(favs) opts += '<option value="fav">Favourites ('+favs+')</option>';
+  cats.forEach(function(cat){ opts += '<option value="cat:'+esc(cat.id)+'">'+esc(cat.name)+' ('+cat.count+')</option>'; });
+  var sel = document.getElementById("friendVaultFilter");
+  sel.innerHTML = opts;
+  sel.value = "all";
+  document.getElementById("friendVaultControls").classList.toggle("hidden", !cars.length);
+}
+
+function friendVaultVisibleCars(){
+  var q = normalizeCarText(friendVaultState.search);
+  var f = friendVaultState.filter;
+  return friendVaultState.cars.filter(function(c){
+    if(f === "fav" && !c.favourite) return false;
+    if(f.indexOf("cat:") === 0){
+      var id = f.slice(4);
+      if(!(c.categories||[]).some(function(cat){ return cat.id === id; })) return false;
+    }
+    if(q){
+      var hay = normalizeCarText([c.name, c.brand, c.year, c.extColor, c.intColor, c.madeIn, c.packagingType]
+        .concat((c.categories||[]).map(function(x){ return x.name; })).join(" "));
+      return q.split(" ").every(function(word){ return hay.indexOf(word) !== -1; });
+    }
+    return true;
+  });
+}
+
+function renderFriendVault(){
+  var body = document.getElementById("friendVaultBody");
+  if(!friendVaultState.cars.length){
+    body.innerHTML = '<div class="friends-empty" style="padding:60px 20px;">No cars visible here yet.</div>';
+    return;
+  }
+  var cars = friendVaultVisibleCars();
+  if(!cars.length){
+    body.innerHTML = '<div class="friends-empty" style="padding:60px 20px;">No cars match your search.</div>';
+    return;
+  }
+  body.innerHTML = '<div class="collection-grid" style="padding:4px var(--safe-r) 24px var(--safe-l);">' +
+    cars.map(function(car, i){
+      var photo = car.photos.front || car.photos.back || car.photos.wheels || car.photos.interior;
+      var heart = car.favourite ? '<div class="heart">'+heartIcon(true)+'</div>' : "";
+      return '<div class="car-card" data-idx="'+i+'">'+
+        '<div class="photo">'+(photo?'<img src="'+photo+'" alt="">':'<div class="ph-icon">'+carSilhouette()+'</div>')+heart+'</div>'+
+        '<div class="info"><div class="cname">'+esc(car.name)+'</div><div class="cyear">'+esc(car.year||"")+'</div></div>'+
+      '</div>';
+    }).join("") +
+  '</div>';
+  body.querySelectorAll(".car-card").forEach(function(el){
+    el.addEventListener("click", function(){
+      openFriendCarDetail(cars[+el.getAttribute("data-idx")]);
+    });
+  });
+}
+document.getElementById("friendVaultSearch").addEventListener("input", function(){
+  friendVaultState.search = this.value;
+  renderFriendVault();
+});
+document.getElementById("friendVaultFilter").addEventListener("change", function(){
+  friendVaultState.filter = this.value;
+  renderFriendVault();
+});
+
+/* ---- read-only detail view for a friend's car (no edit/delete controls) ---- */
+function friendDetailRow(label, value){
+  if(!value) return "";
+  return '<div class="fcd-row"><span class="fcd-label">'+esc(label)+'</span><span class="fcd-value">'+esc(value)+'</span></div>';
+}
+function openFriendCarDetail(car){
+  var imgs = PHOTO_SLOTS.map(function(s){ return car.photos[s]; }).filter(Boolean);
+  var photo = imgs[0];
+  var packagingLine = car.packagingType ?
+    (car.packagingType === "Multi-Pack" && car.packSize ? car.packagingType+" ("+car.packSize+")" : car.packagingType)
+    : "";
+
+  document.getElementById("friendCarDetailBody").innerHTML =
+    '<div class="fcd-photo">'+(photo?'<img src="'+photo+'" alt="">':'<div class="ph-icon">'+carSilhouette()+'</div>')+'</div>'+
+    (imgs.length > 1 ? '<div class="fcd-thumbs">'+imgs.map(function(u,i){ return '<button class="fcd-thumb" data-i="'+i+'"><img src="'+u+'"></button>'; }).join("")+'</div>' : "")+
+    '<div class="fcd-name">'+esc(car.name)+'</div>'+
+    '<div class="fcd-details">'+
+      friendDetailRow("Brand", car.brand)+
+      friendDetailRow("Year", car.year)+
+      friendDetailRow("Exterior Color", car.extColor)+
+      friendDetailRow("Interior Color", car.intColor)+
+      friendDetailRow("Made In", car.madeIn)+
+      friendDetailRow("Packaging", packagingLine)+
+    '</div>';
+
+  document.getElementById("friendCarDetailBody").querySelectorAll(".fcd-thumb").forEach(function(btn){
+    btn.addEventListener("click", function(){ openPhotoViewer(imgs, +btn.getAttribute("data-i")); });
+  });
+  var mainPhoto = document.querySelector("#friendCarDetailBody .fcd-photo img");
+  if(mainPhoto) mainPhoto.addEventListener("click", function(){ openPhotoViewer(imgs, 0); });
+
+  var _fcv=document.getElementById("friendCarDetailView"); bringToFront(_fcv); _fcv.classList.remove("hidden");
+}
+document.getElementById("friendCarDetailCloseBtn").addEventListener("click", function(){
+  document.getElementById("friendCarDetailView").classList.add("hidden");
+});
+document.getElementById("friendVaultCloseBtn").addEventListener("click", function(){
+  document.getElementById("friendVaultView").classList.add("hidden");
+});
+document.getElementById("friendVaultMenuBtn").addEventListener("click", function(){
+  if(!friendVaultState.profile) return;
+  var p = friendVaultState.profile;
+  openActionSheet([
+    { label: "Remove Friend", danger:true, action: function(){
+      confirmDialog("Remove "+p.first_name+"?", "You'll no longer see each other's friends-visible cars.", "Remove", function(){
+        removeFriendship(p.id).then(function(){
+          showToast("Friend removed.");
+          document.getElementById("friendVaultView").classList.add("hidden");
+          renderFriendsScreen();
+        }).catch(function(){ showToast("Could not remove friend."); });
+      }, true);
+    }},
+    { label: "Block "+p.first_name, danger:true, action: function(){
+      confirmDialog("Block "+p.first_name+"?", "They won't be able to see your collection or send you requests again unless you unblock them later.", "Block", function(){
+        blockUserById(p.id).then(function(){
+          showToast("User blocked.");
+          document.getElementById("friendVaultView").classList.add("hidden");
+          renderFriendsScreen();
+        }).catch(function(){ showToast("Could not block user."); });
+      }, true);
+    }}
+  ]);
+});
+
+// Minimal action sheet built from the existing modal card, since it's
+// already used for context menus elsewhere in the app.
+function openActionSheet(items){
+  var card = document.getElementById("modalCard");
+  card.innerHTML = items.map(function(it,i){
+    return '<button class="ctx-menu-btn'+(it.danger?" danger":"")+'" data-i="'+i+'">'+esc(it.label)+'</button>';
+  }).join("") + '<button class="ctx-menu-btn cancel" data-cancel="1">Cancel</button>';
+  document.getElementById("modalOverlay").classList.remove("hidden");
+  card.querySelectorAll("[data-i]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.getElementById("modalOverlay").classList.add("hidden");
+      items[+btn.getAttribute("data-i")].action();
+    });
+  });
+  card.querySelector("[data-cancel]").addEventListener("click", function(){
+    document.getElementById("modalOverlay").classList.add("hidden");
+  });
+}
+
+/* ============================================================
+   PROFILE SCREEN
+   ============================================================ */
+function renderProfileScreen(){
+  var box = document.getElementById("profileScroll");
+  var prof = window.DVAuth.profile;
+  if(!prof){ box.innerHTML = ""; return; }
+  var memberSince = new Date(prof.created_at).toLocaleDateString(undefined, { month:"long", year:"numeric" });
+  var favCount = state.cars.filter(function(c){return c.favourite;}).length;
+
+  box.innerHTML =
+    '<div class="profile-header">' +
+      '<div class="profile-avatar-wrap" id="profileAvatarBtn"><div class="profile-avatar-lg">'+avatarImgHtml(prof.avatar_path)+'</div><div class="avatar-edit-badge">'+editPencilIcon()+'</div></div>' +
+      '<input type="file" id="profileAvatarUpload" accept="image/*" style="display:none">' +
+      '<input type="file" id="profileAvatarCamera" accept="image/*" capture="user" style="display:none">' +
+      '<div class="profile-name">'+esc(prof.first_name)+' '+esc(prof.last_name)+'</div>' +
+      '<div class="profile-username">@'+esc(prof.username)+' · Member since '+memberSince+'</div>' +
+    '</div>' +
+    '<div class="profile-stats">' +
+      '<div class="profile-stat"><div class="num">'+state.cars.length+'</div><div class="lbl">Cars</div></div>' +
+      '<div class="profile-stat"><div class="num">'+favCount+'</div><div class="lbl">Favourites</div></div>' +
+      '<div class="profile-stat"><div class="num">'+state.categories.length+'</div><div class="lbl">Categories</div></div>' +
+    '</div>' +
+    '<div class="friends-section-title" style="padding-left:0;">Categories</div>' +
+    state.categories.map(function(cat){
+      var n = state.cars.filter(function(c){ return carCategoryIds(c).indexOf(cat.id) !== -1; }).length;
+      return '<div class="profile-cat-row"><span>'+esc(cat.name)+'</span><span class="n">'+n+'</span></div>';
+    }).join("");
+
+  document.getElementById("profileAvatarBtn").addEventListener("click", function(){
+    openActionSheet([
+      { label: "Upload Photo", action: function(){ document.getElementById("profileAvatarUpload").click(); } },
+      { label: "Take Photo", action: function(){ document.getElementById("profileAvatarCamera").click(); } }
+    ]);
+  });
+  document.getElementById("profileAvatarUpload").addEventListener("change", handleProfileAvatarFile);
+  document.getElementById("profileAvatarCamera").addEventListener("change", handleProfileAvatarFile);
+}
+
+function editPencilIcon(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
+}
+
+function handleProfileAvatarFile(e){
+  var file = e.target.files && e.target.files[0];
+  if(!file) return;
+  var uidVal = myUid();
+  var path = uidVal + "/avatar-" + Date.now() + "." + (file.type.split("/")[1] || "jpg");
+  showToast("Uploading photo…");
+  sbc().storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type })
+    .then(function(res){
+      if(res.error) throw res.error;
+      return sbc().from("profiles").update({ avatar_path: path }).eq("id", uidVal);
+    })
+    .then(function(res){
+      if(res.error) throw res.error;
+      window.DVAuth.profile.avatar_path = path;
+      showToast("Profile picture updated.");
+      renderProfileScreen();
+      renderSettings();
+    })
+    .catch(function(err){
+      console.error(err);
+      showToast("Could not update profile picture.");
+    });
+}
+
+/* ============================================================
+   ADMIN DASHBOARD
+   ============================================================ */
+var adminState = { users: [] };
+
+function fetchAdminUserList(){
+  return sbc().rpc("admin_list_users").then(function(res){ if(res.error) throw res.error; return res.data || []; });
+}
+function fetchAdminUserDetail(targetId){
+  return sbc().rpc("admin_user_detail", { target: targetId }).then(function(res){
+    if(res.error) throw res.error;
+    return (res.data && res.data[0]) || null;
+  });
+}
+function adminSetStatus(targetId, newStatus){
+  return sbc().rpc("admin_set_status", { target: targetId, new_status: newStatus }).then(function(res){ if(res.error) throw res.error; });
+}
+function adminDeleteUser(targetId){
+  return sbc().rpc("admin_delete_user", { target: targetId }).then(function(res){ if(res.error) throw res.error; });
+}
+
+function maybeShowAdminTab(){
+  var prof = window.DVAuth.profile;
+  document.getElementById("navAdmin").classList.toggle("hidden", !(prof && prof.role === "admin"));
+}
+
+function renderAdminScreen(){
+  var list = document.getElementById("adminUserList");
+  list.innerHTML = '<div class="friends-empty">Loading…</div>';
+  fetchAdminUserList().then(function(users){
+    adminState.users = users;
+    renderAdminUserList(document.getElementById("adminSearchInput").value);
+  }).catch(function(err){
+    console.error(err);
+    list.innerHTML = '<div class="friends-empty">Could not load users.</div>';
+  });
+}
+function renderAdminUserList(filterText){
+  var list = document.getElementById("adminUserList");
+  var q = (filterText||"").trim().toLowerCase();
+  var users = adminState.users.filter(function(u){
+    if(!q) return true;
+    return (u.username||"").toLowerCase().indexOf(q) !== -1 ||
+           (u.first_name+" "+u.last_name).toLowerCase().indexOf(q) !== -1;
+  });
+  if(!users.length){ list.innerHTML = '<div class="friends-empty">No users found.</div>'; return; }
+  list.innerHTML = users.map(function(u){
+    var memberSince = new Date(u.created_at).toLocaleDateString(undefined,{month:"short",year:"numeric"});
+    var statusTag = u.status === "suspended" ? '<span class="status-badge suspended">Suspended</span>' : '';
+    var youTag = u.id === myUid() ? '<span class="status-badge you">You</span>' : '';
+    return '<div class="friend-card" data-open="'+u.id+'">'+
+      '<div class="friend-avatar">'+avatarImgHtml(u.avatar_path)+'</div>'+
+      '<div class="friend-info"><div class="friend-name">'+esc(u.first_name)+' '+esc(u.last_name)+' '+youTag+statusTag+'</div>'+
+      '<div class="friend-sub">@'+esc(u.username)+' · '+u.car_count+' cars · since '+memberSince+'</div></div>'+
+    '</div>';
+  }).join("");
+  list.querySelectorAll("[data-open]").forEach(function(el){
+    el.addEventListener("click", function(){ openAdminUserDetail(el.getAttribute("data-open")); });
+  });
+}
+document.getElementById("adminSearchInput").addEventListener("input", function(){
+  renderAdminUserList(this.value);
+});
+
+function openAdminUserDetail(userId){
+  var body = document.getElementById("adminUserDetailBody");
+  body.innerHTML = '<div class="friends-empty">Loading…</div>';
+  var _audv=document.getElementById("adminUserDetailView"); bringToFront(_audv); _audv.classList.remove("hidden");
+  fetchAdminUserDetail(userId).then(function(u){
+    if(!u){ body.innerHTML = '<div class="friends-empty">Could not load this account.</div>'; return; }
+    var memberSince = new Date(u.created_at).toLocaleDateString(undefined,{month:"long",year:"numeric"});
+    var dob = u.date_of_birth ? new Date(u.date_of_birth).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"}) : "—";
+    var catCounts = u.category_counts || {};
+    var catRows = Object.keys(catCounts).map(function(name){
+      return '<div class="fcd-row"><span class="fcd-label">'+esc(name)+'</span><span class="fcd-value">'+catCounts[name]+'</span></div>';
+    }).join("");
+    var isSuspended = u.status === "suspended";
+    var isSelf = u.id === myUid();
+    var actionsHtml = isSelf
+      ? '<div class="friends-empty" style="padding:6px 8px 0;">This is your own account — you can\'t suspend or delete it from here.</div>'
+      : '<button class="btn btn-secondary btn-block" id="adminToggleSuspendBtn" style="margin-bottom:10px;">'+(isSuspended?"Reactivate Account":"Suspend Account")+'</button>'+
+        '<button class="btn btn-danger btn-block" id="adminDeleteUserBtn">Delete Account</button>';
+
+    body.innerHTML =
+      '<div class="profile-header">'+
+        '<div class="profile-avatar-wrap"><div class="profile-avatar-lg">'+avatarImgHtml(u.avatar_path)+'</div></div>'+
+        '<div class="profile-name">'+esc(u.first_name)+' '+esc(u.last_name)+'</div>'+
+        '<div class="profile-username">@'+esc(u.username)+'</div>'+
+        '<div class="status-badge '+(isSuspended?"suspended":"active")+'" style="margin-top:6px;">'+(isSuspended?"Suspended":"Active")+'</div>'+
+      '</div>'+
+      '<div class="fcd-details" style="margin-bottom:16px;">'+
+        friendDetailRow("Date of Birth", dob)+
+        friendDetailRow("Member Since", memberSince)+
+        friendDetailRow("Total Cars", String(u.car_count))+
+      '</div>'+
+      (catRows ? '<div class="friends-section-title" style="padding-left:0;">Categories</div><div class="fcd-details" style="margin-bottom:16px;">'+catRows+'</div>' : '')+
+      actionsHtml;
+
+    if(!isSelf){
+    document.getElementById("adminToggleSuspendBtn").addEventListener("click", function(){
+      var next = isSuspended ? "active" : "suspended";
+      var msg = isSuspended ? "They'll be able to sign in and use the app again." : "They won't be able to sign in or use the app until reactivated.";
+      confirmDialog((isSuspended?"Reactivate":"Suspend")+" "+u.first_name+"?", msg, isSuspended?"Reactivate":"Suspend", function(){
+        adminSetStatus(u.id, next).then(function(){
+          showToast("Account "+(isSuspended?"reactivated":"suspended")+".");
+          openAdminUserDetail(u.id);
+          renderAdminScreen();
+        }).catch(function(){ showToast("Could not update account status."); });
+      }, !isSuspended);
+    });
+    document.getElementById("adminDeleteUserBtn").addEventListener("click", function(){
+      confirmDialog("Delete "+u.first_name+"'s account?", "This permanently erases their account and entire collection. This cannot be undone.", "Continue", function(){
+        confirmDialog("Are you absolutely sure?", "@"+u.username+"'s account and all data will be permanently deleted.", "Delete Account", function(){
+          adminDeleteUser(u.id).then(function(){
+            showToast("Account deleted.");
+            document.getElementById("adminUserDetailView").classList.add("hidden");
+            renderAdminScreen();
+          }).catch(function(){ showToast("Could not delete account."); });
+        }, true);
+      }, true);
+    });
+    }
+  }).catch(function(err){
+    console.error(err);
+    body.innerHTML = '<div class="friends-empty">Could not load this account.</div>';
+  });
+}
+document.getElementById("adminUserDetailCloseBtn").addEventListener("click", function(){
+  document.getElementById("adminUserDetailView").classList.add("hidden");
+});
+
+/* ============================================================
+   LEADERBOARD
+   ============================================================ */
+var leaderboardState = { rows: [], mode: "all" };
+
+function fetchLeaderboard(){
+  return sbc().rpc("leaderboard").then(function(res){ if(res.error) throw res.error; return res.data || []; });
+}
+
+function renderLeaderboardScreen(){
+  document.getElementById("lbYou").innerHTML = "";
+  document.getElementById("lbList").innerHTML = '<div class="friends-empty">Loading…</div>';
+  fetchLeaderboard().then(function(rows){
+    leaderboardState.rows = rows.map(function(r){
+      r.car_count = Number(r.car_count); r.lb_rank = Number(r.lb_rank); r.total_users = Number(r.total_users);
+      return r;
+    });
+    drawLeaderboard();
+  }).catch(function(err){
+    console.error(err);
+    document.getElementById("lbList").innerHTML = '<div class="friends-empty">Could not load the leaderboard.</div>';
+  });
+}
+
+function setLeaderboardMode(mode){
+  leaderboardState.mode = mode;
+  document.getElementById("lbModeAll").classList.toggle("active", mode === "all");
+  document.getElementById("lbModeFriends").classList.toggle("active", mode === "friends");
+  if(leaderboardState.rows.length) drawLeaderboard();
+}
+document.getElementById("lbModeAll").addEventListener("click", function(){ setLeaderboardMode("all"); });
+document.getElementById("lbModeFriends").addEventListener("click", function(){ setLeaderboardMode("friends"); });
+
+function drawLeaderboard(){
+  var me = myUid(), mode = leaderboardState.mode, rows = leaderboardState.rows;
+  var meRow = rows.filter(function(r){ return r.user_id === me; })[0];
+  var shown, total;
+
+  if(mode === "friends"){
+    // Ranked among you and your friends only.
+    shown = rows.filter(function(r){ return r.is_friend || r.user_id === me; }).slice()
+      .sort(function(a,b){ return (b.car_count - a.car_count) || a.username.localeCompare(b.username); });
+    var lastCount = null, lastRank = 0;
+    shown.forEach(function(r, i){
+      if(r.car_count !== lastCount){ lastRank = i + 1; lastCount = r.car_count; }
+      r._rank = lastRank;
+    });
+    total = shown.length;
+  } else {
+    // Ranked among every active user; the top 100 plus you.
+    shown = rows.filter(function(r){ return r.lb_rank <= 100 || r.user_id === me; });
+    shown.forEach(function(r){ r._rank = r.lb_rank; });
+    total = meRow ? meRow.total_users : shown.length;
+  }
+
+  document.getElementById("lbYou").innerHTML = meRow
+    ? '<div class="lb-you"><div><div class="lbl">Your position</div><div><span class="pos">#'+meRow._rank+'</span><span class="of">of '+total+(mode === "friends" ? " (you and your friends)" : " users")+'</span></div></div>'+
+      '<div class="cars"><div class="n">'+meRow.car_count+'</div><div class="l">'+(meRow.car_count === 1 ? "car" : "cars")+'</div></div></div>'
+    : "";
+
+  var html = "", prevRank = 0;
+  shown.forEach(function(r){
+    var isMe = r.user_id === me;
+    if(mode === "all" && isMe && r._rank > 100 && prevRank && prevRank <= 100) html += '<div class="lb-gap">• • •</div>';
+    prevRank = r._rank;
+    var clickable = r.is_friend && !isMe;
+    html += '<div class="lb-row'+(isMe ? " me" : "")+(clickable ? " clickable" : "")+'" data-uid="'+r.user_id+'">'+
+      '<div class="lb-rank'+(r._rank <= 3 ? " top" : "")+'">'+r._rank+'</div>'+
+      '<div class="friend-avatar">'+avatarImgHtml(r.avatar_path)+'</div>'+
+      '<div class="friend-info"><div class="friend-name">'+esc(r.first_name)+' '+esc(r.last_name)+(isMe ? ' <span class="status-badge you">You</span>' : '')+'</div>'+
+      '<div class="friend-sub">@'+esc(r.username)+'</div></div>'+
+      '<div class="lb-count"><div class="n">'+r.car_count+'</div><div class="l">'+(r.car_count === 1 ? "car" : "cars")+'</div></div>'+
+    '</div>';
+  });
+  if(mode === "friends" && shown.length <= 1) html += '<div class="friends-empty">Add friends from the Friends tab to compare collections.</div>';
+
+  var list = document.getElementById("lbList");
+  list.innerHTML = html || '<div class="friends-empty">Nobody here yet.</div>';
+  list.querySelectorAll(".lb-row.clickable").forEach(function(el){
+    el.addEventListener("click", function(){
+      var r = rows.filter(function(x){ return x.user_id === el.getAttribute("data-uid"); })[0];
+      if(r) openFriendVault({ id: r.user_id, first_name: r.first_name, last_name: r.last_name, username: r.username, avatar_path: r.avatar_path });
+    });
+  });
+}
+
+/* ============================================================
+   UPDATE LOG
+   Newest first. Numbering: the original app you uploaded is 1.0.0; the first
+   number changes when the app is rebuilt, the middle for a new feature, the last
+   for fixes. Add a new entry at the TOP for every release and bump APP_VERSION
+   (and VERSION in sw.js) to match.
+   ============================================================ */
+var UPDATE_LOG = [
+  { v:"2.8.0", title:"Leaderboard, update log & account safety", items:[
+    "Leaderboard: see how many cars every collector has, switch between All Users and Friends, and see your own position.",
+    "Update Log added to Settings (this screen).",
+    "Friend vaults: search cars and filter by category or favourites.",
+    "Friend requests sent to the admin, and to 1br4him, are now accepted automatically.",
+    "Suspended accounts now see a clear Account Suspended screen — even while the app is already open.",
+    "Admins can no longer suspend or delete their own account.",
+    "Closed a security gap: users can no longer change their own role or status.",
+    "The app now updates itself to the newest version automatically.",
+    "Warning (not a block) when you add a car that looks like one you already own.",
+    "Settings now says your cars are synced to your account instead of stored locally.",
+    "Version numbers now count every release, starting from the original app as 1.0.0."
+  ]},
+  { v:"2.7.2", title:"Plus button, sidebars & layering fixes", items:[
+    "Plus button is centred and uses the right colour on every theme.",
+    "Lime Spark now has a graphite sidebar and Burnt Orange a vanilla one.",
+    "Fixed screens opening behind Settings (such as the Theme picker) by moving them to the top layer.",
+    "Heart icons follow each theme's sidebar colours."
+  ]},
+  { v:"2.7.1", title:"Theme sync & polish", items:[
+    "Your theme now follows your account across devices.",
+    "The theme picker only appears when you sign up, not every time you log in.",
+    "Warm Lime switched to a dark olive look with lime accents.",
+    "Sidebar and empty-photo areas now follow the theme.",
+    "Plus button turns black or white for contrast."
+  ]},
+  { v:"2.7.0", title:"Six themes", items:[
+    "Blueberry, Lime Spark, Burnt Orange, Warm Lime, Cyber Grape and Cyber Teal.",
+    "Theme picker with live previews, shown when you first sign up and available any time in Settings.",
+    "Your theme applies instantly on load with no flash."
+  ]},
+  { v:"2.6.1", title:"Car transfer removed", items:[
+    "The car transfer feature was rolled back completely because it caused errors, and its database changes were cleaned out."
+  ]},
+  { v:"2.6.0", title:"Car transfer (later removed)", items:[
+    "Transfer a car to a friend, with a double confirmation."
+  ]},
+  { v:"2.5.0", title:"Admin dashboard", items:[
+    "Admin tab (admins only) with a searchable list of users, car counts and member-since dates.",
+    "Account details with category counts — never anyone's actual cars.",
+    "Suspend, reactivate or delete accounts."
+  ]},
+  { v:"2.4.0", title:"Privacy fix & profile photos", items:[
+    "Fixed a serious bug where friends' cars showed up inside your own vault.",
+    "Existing cars were switched to Friends visibility.",
+    "Change your profile picture any time, by upload or camera."
+  ]},
+  { v:"2.3.0", title:"Richer friend vaults", items:[
+    "Friends can see full car details (brand, year, colours, made in, packaging), read-only.",
+    "New cars default to Friends visibility.",
+    "Friend vault cards use the same responsive grid as your own vault."
+  ]},
+  { v:"2.2.1", title:"New icons", items:[
+    "New app icons: cream background, two corner brackets and the Diecast Vault wordmark."
+  ]},
+  { v:"2.2.0", title:"Blueberry & Cream theme", items:[
+    "Blueberry and Cream Soda colour scheme with a switch in Settings.",
+    "Delete and error actions stay red in any theme."
+  ]},
+  { v:"2.1.0", title:"Friends", items:[
+    "Bottom navigation: Vault, Friends and Profile.",
+    "Search users by username, send, accept and decline requests, with a badge for pending ones.",
+    "Remove friends and block users.",
+    "Browse a friend's vault (only cars they've shared with friends).",
+    "Private or Friends setting on every car.",
+    "Profile screen with your stats and category counts."
+  ]},
+  { v:"2.0.1", title:"Early-account and import fixes", items:[
+    "Early accounts can now sign in on new devices.",
+    "Backups import categories before cars so everything loads."
+  ]},
+  { v:"2.0.0", title:"Cloud vault", items:[
+    "Cars, categories and photos now live in the cloud and sync across all your devices.",
+    "Photos are kept in private storage; undo-delete and Reset Collection still work."
+  ]},
+  { v:"1.2.3", title:"Email verification removed", items:[
+    "Your email is now only used for password reset — verification was dropped because free email limits made it unusable."
+  ]},
+  { v:"1.2.2", title:"Always the latest app", items:[
+    "Fixed old cached copies of the app sticking around."
+  ]},
+  { v:"1.2.1", title:"Clearer sign-in", items:[
+    "Sign-in errors now say exactly what's wrong.",
+    "Each account's data is kept separate on a shared device."
+  ]},
+  { v:"1.2.0", title:"Password reset", items:[
+    "Email address at sign-up.",
+    "Forgot Password sends a reset link, with a set-new-password screen."
+  ]},
+  { v:"1.1.1", title:"Setup fix", items:[
+    "Fixed the database setup order error."
+  ]},
+  { v:"1.1.0", title:"Accounts", items:[
+    "Sign in and create account with unique usernames, password reveal and profile photo by upload or camera.",
+    "Stay signed in, log out and delete account.",
+    "Secure cloud database with row-level security and private photo storage."
+  ]},
+  { v:"1.0.0", title:"Original app", items:[
+    "Local collection manager: car cards, categories, swipeable photo viewer, search, favourites, export and import, undo delete, installable app."
+  ]}
+];
+
+function openUpdateLog(){
+  var body = document.getElementById("updateLogBody");
+  body.innerHTML = '<div class="ul-intro">Every release since the original app. Newest first.</div>' +
+    UPDATE_LOG.map(function(entry, i){
+      return '<div class="ul-entry"><div class="ul-head">'+
+        '<span class="ul-ver">v'+esc(entry.v)+'</span>'+
+        (i === 0 ? '<span class="ul-current">Current</span>' : '')+
+        '<div class="ul-title">'+esc(entry.title)+'</div></div>'+
+        '<ul class="ul-list">'+entry.items.map(function(t){ return '<li>'+esc(t)+'</li>'; }).join("")+'</ul></div>';
+    }).join("");
+  var _ulv = document.getElementById("updateLogView"); bringToFront(_ulv); _ulv.classList.remove("hidden");
+}
+document.getElementById("updateLogCloseBtn").addEventListener("click", function(){
+  document.getElementById("updateLogView").classList.add("hidden");
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function initApp(){
+  return ensureBuiltins()
+    .then(loadAll)
+    .then(function(){
+      renderCollection();
+      refreshFriendsBadge();
+      maybeShowAdminTab();
+    })
+    .catch(function(err){
+      console.error("App init failed", err);
+      showToast("Could not load your vault. Check your connection and try reloading.");
+    });
+}
+window.DVApp = window.DVApp || {};
+window.DVApp.start = initApp;
+
+})();
+</script>
+
+<script>
+/* ============================================================
+   AUTH LAYER — Supabase auth, session handling, sign up / in / out
+   ============================================================ */
+(function(){
+"use strict";
+
+var SUPABASE_URL = "https://gnlewntuiisuyeesbowa.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGV3bnR1aWlzdXllZXNib3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MzczNDcsImV4cCI6MjEwMzIxMzM0N30.8OzNBj_Y4sxRx0YOCuq333wMzHbs_K_rWIWSfSvu9Q8";
+
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var pendingAvatarFile = null;
+
+function eyeIcon(open){
+  return open
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.4 19.4 0 0 1 4.22-5.44M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a19.6 19.6 0 0 1-2.16 3.19M1 1l22 22"/></svg>';
+}
+document.querySelectorAll(".pw-eye").forEach(function(btn){
+  btn.innerHTML = eyeIcon(false);
+  btn.addEventListener("click", function(){
+    var input = document.getElementById(btn.getAttribute("data-target"));
+    var showing = input.type === "text";
+    input.type = showing ? "password" : "text";
+    btn.innerHTML = eyeIcon(!showing);
+  });
+});
+
+function showAuthError(id, msg){
+  var el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.remove("hidden");
+}
+function clearAuthError(id){
+  document.getElementById(id).classList.add("hidden");
+}
+function setBusy(btn, busy, label){
+  btn.disabled = busy;
+  btn.textContent = busy ? "Please wait…" : label;
+}
+
+/* ---------- tab switching ---------- */
+var tabSignIn = document.getElementById("tabSignIn");
+var tabCreate = document.getElementById("tabCreate");
+var signInForm = document.getElementById("signInForm");
+var createForm = document.getElementById("createForm");
+var resetForm = document.getElementById("resetForm");
+var newPasswordForm = document.getElementById("newPasswordForm");
+var allAuthForms = [signInForm, createForm, resetForm, newPasswordForm];
+function showForm(form){
+  allAuthForms.forEach(function(f){ f.classList.toggle("hidden", f !== form); });
+}
+function showSignIn(){
+  tabSignIn.classList.add("active"); tabCreate.classList.remove("active");
+  showForm(signInForm);
+}
+function showCreate(){
+  tabCreate.classList.add("active"); tabSignIn.classList.remove("active");
+  showForm(createForm);
+}
+function showReset(){
+  tabSignIn.classList.remove("active"); tabCreate.classList.remove("active");
+  showForm(resetForm);
+}
+tabSignIn.addEventListener("click", showSignIn);
+tabCreate.addEventListener("click", showCreate);
+document.getElementById("siGoCreate").addEventListener("click", showCreate);
+document.getElementById("caGoSignIn").addEventListener("click", showSignIn);
+document.getElementById("siForgot").addEventListener("click", showReset);
+document.getElementById("rsGoSignIn").addEventListener("click", showSignIn);
+
+/* ---------- avatar picker ---------- */
+var avatarPreview = document.getElementById("avatarPreview");
+avatarPreview.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>';
+document.getElementById("avatarUploadBtn").addEventListener("click", function(){ document.getElementById("avatarUploadInput").click(); });
+document.getElementById("avatarCameraBtn").addEventListener("click", function(){ document.getElementById("avatarCameraInput").click(); });
+function handleAvatarFile(e){
+  var file = e.target.files && e.target.files[0];
+  if(!file) return;
+  pendingAvatarFile = file;
+  var reader = new FileReader();
+  reader.onload = function(){ avatarPreview.innerHTML = '<img src="'+reader.result+'">'; };
+  reader.readAsDataURL(file);
+}
+document.getElementById("avatarUploadInput").addEventListener("change", handleAvatarFile);
+document.getElementById("avatarCameraInput").addEventListener("change", handleAvatarFile);
+
+/* ---------- sign in ---------- */
+signInForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  clearAuthError("siError");
+  var username = document.getElementById("siUsername").value.trim();
+  var password = document.getElementById("siPassword").value;
+  if(!username || !password){ showAuthError("siError","Enter your username and password."); return; }
+
+  var btn = document.getElementById("siSubmit");
+  setBusy(btn, true, "Sign In");
+  sb.rpc("email_for_username", { p_username: username })
+    .then(function(res){
+      if(res.error || !res.data){ throw new Error("No account found for that username."); }
+      return sb.auth.signInWithPassword({ email: res.data, password: password });
+    })
+    .then(function(res){
+      if(res.error){
+        var msg = res.error.message || "Sign in failed.";
+        if(/email not confirmed/i.test(msg)){
+          throw new Error("Please confirm your email first — check your inbox for the confirmation link we sent.");
+        }
+        if(/invalid login credentials/i.test(msg)){
+          throw new Error("Incorrect username or password.");
+        }
+        throw new Error(msg);
+      }
+      return afterAuthed(res.data.user.id);
+    })
+    .catch(function(err){ showAuthError("siError", err.message || "Sign in failed."); })
+    .finally(function(){ setBusy(btn, false, "Sign In"); });
+});
+
+/* ---------- forgot password ---------- */
+resetForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  clearAuthError("rsError");
+  document.getElementById("rsSent").classList.add("hidden");
+  var username = document.getElementById("rsUsername").value.trim();
+  if(!username){ showAuthError("rsError","Enter your username."); return; }
+
+  var btn = document.getElementById("rsSubmit");
+  setBusy(btn, true, "Send Reset Link");
+  sb.rpc("email_for_username", { p_username: username })
+    .then(function(res){
+      var email = res.data;
+      if(res.error || !email){
+        // Don't reveal whether the username exists — show the same confirmation either way.
+        return;
+      }
+      return sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+    })
+    .then(function(){ document.getElementById("rsSent").classList.remove("hidden"); })
+    .catch(function(){ document.getElementById("rsSent").classList.remove("hidden"); })
+    .finally(function(){ setBusy(btn, false, "Send Reset Link"); });
+});
+
+/* ---------- set new password (arriving from a reset-link redirect) ---------- */
+newPasswordForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  clearAuthError("npError");
+  var pw = document.getElementById("npPassword").value;
+  var confirm = document.getElementById("npConfirm").value;
+  if(pw.length < 8){ showAuthError("npError","Password must be at least 8 characters."); return; }
+  if(pw !== confirm){ showAuthError("npError","Passwords do not match."); return; }
+
+  var btn = document.getElementById("npSubmit");
+  setBusy(btn, true, "Set New Password");
+  sb.auth.updateUser({ password: pw })
+    .then(function(res){
+      if(res.error) throw new Error(res.error.message);
+      return sb.auth.getSession();
+    })
+    .then(function(res){ return afterAuthed(res.data.session.user.id); })
+    .catch(function(err){ showAuthError("npError", err.message || "Could not set new password."); })
+    .finally(function(){ setBusy(btn, false, "Set New Password"); });
+});
+
+sb.auth.onAuthStateChange(function(event){
+  if(event === "PASSWORD_RECOVERY"){
+    document.getElementById("authLoading").classList.add("hidden");
+    document.getElementById("authView").classList.remove("hidden");
+    showForm(newPasswordForm);
+  }
+});
+
+/* ---------- create account ---------- */
+createForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  clearAuthError("caError");
+
+  var first = document.getElementById("caFirst").value.trim();
+  var last = document.getElementById("caLast").value.trim();
+  var dob = document.getElementById("caDob").value;
+  var email = document.getElementById("caEmail").value.trim();
+  var username = document.getElementById("caUsername").value.trim();
+  var password = document.getElementById("caPassword").value;
+  var confirm = document.getElementById("caConfirm").value;
+
+  if(!first || !last || !dob || !email || !username || !password){ showAuthError("caError","Please fill in every field."); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showAuthError("caError","Enter a valid email address."); return; }
+  if(!/^[a-zA-Z0-9_]{3,20}$/.test(username)){ showAuthError("caError","Username must be 3-20 characters: letters, numbers, underscore."); return; }
+  if(password.length < 8){ showAuthError("caError","Password must be at least 8 characters."); return; }
+  if(password !== confirm){ showAuthError("caError","Passwords do not match."); return; }
+
+  var btn = document.getElementById("caSubmit");
+  setBusy(btn, true, "Create Account");
+
+  sb.rpc("username_available", { check_username: username })
+    .then(function(res){
+      if(res.error) throw new Error("Couldn't verify username right now. Try again.");
+      if(res.data === false) throw new Error("That username is already taken.");
+      return sb.auth.signUp({
+        email: email,
+        password: password,
+        options: { data: { username: username, first_name: first, last_name: last, date_of_birth: dob } }
+      });
+    })
+    .then(function(res){
+      if(res.error){
+        var m = /already registered|duplicate/i.test(res.error.message) ? "An account with that email already exists." : res.error.message;
+        throw new Error(m);
+      }
+      if(res.data.session){
+        return finishSignupThenEnter(res.data.user.id);
+      }
+      // Shouldn't happen with "Confirm email" turned off in Supabase, but
+      // guard against it rather than silently failing.
+      throw new Error("Account created, but no session was returned. In Supabase, check Authentication → Providers → Email → 'Confirm email' is turned OFF.");
+    })
+    .catch(function(err){ showAuthError("caError", err.message || "Could not create account."); })
+    .finally(function(){ setBusy(btn, false, "Create Account"); });
+});
+
+function finishSignupThenEnter(uid){
+  if(pendingAvatarFile){
+    var path = uid + "/avatar-" + Date.now() + "." + (pendingAvatarFile.type.split("/")[1] || "jpg");
+    return sb.storage.from("avatars").upload(path, pendingAvatarFile, { upsert: true, contentType: pendingAvatarFile.type })
+      .then(function(){ return sb.from("profiles").update({ avatar_path: path }).eq("id", uid); })
+      .then(function(){ return afterAuthed(uid, true); });
+  }
+  return afterAuthed(uid, true);
+}
+
+/* ---------- after successful sign-in/sign-up ----------
+   isSignup is only true right after account creation — that's the one
+   and only time the theme picker should appear automatically. Logging
+   into an existing account, on this device or a new one, never shows it;
+   the theme itself still follows the account via profiles.theme either way. */
+function afterAuthed(uid, isSignup){
+  return sb.from("profiles").select("*").eq("id", uid).single().then(function(res){
+    if(res.error || !res.data){ throw new Error("Could not load your profile."); }
+    if(res.data.status === "suspended"){ showSuspended(); return; }
+    window.DVAuth.profile = res.data;
+    document.getElementById("authView").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    if(window.DVApp && window.DVApp.applyStoredTheme) window.DVApp.applyStoredTheme(res.data.theme);
+    if(window.DVApp && window.DVApp.start) window.DVApp.start();
+    if(isSignup && window.DVApp && window.DVApp.openThemePicker) window.DVApp.openThemePicker(true);
+    startStatusWatch();
+  });
+}
+
+/* ---------- suspension ----------
+   Suspension is checked at sign-in, and re-checked while the app is open (every
+   minute, and whenever the tab/app comes back into view) so an admin suspending an
+   account takes effect on that user's device too, not just the next time they log in. */
+var statusTimer = null;
+var lastStatusCheck = 0;
+
+function showSuspended(){
+  if(statusTimer){ clearInterval(statusTimer); statusTimer = null; }
+  window.DVAuth.profile = null;
+  sb.auth.signOut().catch(function(){});
+  document.getElementById("authLoading").classList.add("hidden");
+  document.getElementById("authView").classList.add("hidden");
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("suspendedView").classList.remove("hidden");
+}
+function checkStatus(){
+  var p = window.DVAuth && window.DVAuth.profile;
+  if(!p || document.hidden) return;
+  var now = Date.now();
+  if(now - lastStatusCheck < 5000) return;
+  lastStatusCheck = now;
+  sb.from("profiles").select("status").eq("id", p.id).single().then(function(res){
+    if(res.data && res.data.status === "suspended") showSuspended();
+  });
+}
+function startStatusWatch(){
+  if(statusTimer) clearInterval(statusTimer);
+  statusTimer = setInterval(checkStatus, 60000);
+}
+document.addEventListener("visibilitychange", function(){ if(!document.hidden) checkStatus(); });
+window.addEventListener("focus", checkStatus);
+document.getElementById("suspendedBackBtn").addEventListener("click", function(){
+  sb.auth.signOut().catch(function(){}).then(function(){ window.location.reload(); });
+});
+
+/* ---------- public auth API (used by Settings: log out / delete account) ---------- */
+window.DVAuth = {
+  client: sb,
+  profile: null,
+  signOut: function(){
+    return sb.auth.signOut().then(function(){ window.location.reload(); });
+  },
+  deleteAccount: function(){
+    var uid = window.DVAuth.profile && window.DVAuth.profile.id;
+    if(!uid) return Promise.reject(new Error("Not signed in."));
+    return sb.from("profiles").delete().eq("id", uid).then(function(res){
+      if(res.error) throw new Error(res.error.message);
+      return sb.auth.signOut();
+    }).then(function(){ window.location.reload(); });
+  },
+  avatarUrl: function(path){
+    if(!path) return null;
+    return sb.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+  }
+};
+
+/* ---------- boot: check for an existing session ---------- */
+sb.auth.getSession().then(function(res){
+  var session = res.data && res.data.session;
+  document.getElementById("authLoading").classList.add("hidden");
+  if(session){
+    afterAuthed(session.user.id).catch(function(){
+      document.getElementById("authView").classList.remove("hidden");
+    });
+  } else {
+    document.getElementById("authView").classList.remove("hidden");
+  }
+}).catch(function(){
+  document.getElementById("authLoading").classList.add("hidden");
+  document.getElementById("authView").classList.remove("hidden");
+});
+
+})();
+</script>
+</body>
+</html>
